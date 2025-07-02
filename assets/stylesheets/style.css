@@ -14,24 +14,35 @@
 #calculator {
   position: absolute;
   top: 40vh;
-  left: 25vw;
+  left: 20vw;
 }
 
 #calculator #buttons {
+  margin-top: .5rem;
   user-select: none;
   -webkit-user-select: none;
 }
 
 .number,
-.operator {
+.special,
+.operator,
+.visually-like-number,
+.visually-like-operator {
   border: 1px solid black;
 }
 
-.number {
+.number,
+.visually-like-number {
   background-color: white;
 }
 
-.operator {
+.operator,
+.visually-like-operator {
   background-color: black;
+  color: white;
+}
+
+.special {
+  background-color: #D43775;
   color: white;
 }
