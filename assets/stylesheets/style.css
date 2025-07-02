@@ -1,0 +1,37 @@
+@font-face {
+  font-family: 'Speedy Font';
+  src:
+    url('../fonts/SpeedyRegular-7BLoE.ttf');
+}
+
+:root,
+:root *,
+:root::before,
+:root::after {
+  font-family: 'Speedy Font', sans-serif;
+}
+
+#calculator {
+  position: absolute;
+  top: 40vh;
+  left: 25vw;
+}
+
+#calculator #buttons {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.number,
+.operator {
+  border: 1px solid black;
+}
+
+.number {
+  background-color: white;
+}
+
+.operator {
+  background-color: black;
+  color: white;
+}
