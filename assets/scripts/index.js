@@ -1,5 +1,13 @@
-import keyBinds from './keybinds.js';
-// Add keyBinds global registry of used keys
+// To-Do: add BigInt support (or at least do something with scientific notation!)
+// Current Problem: when a number gets large enough, and a user tries to add
+// Number to this scientific notation, it gets broken (2+e10 and user adds 2
+// -> becomes 2+e102)
+///////////
+// Idea: Make vim keyboard with changable layout by using A or I as input
+// It should look like normal calculator tile but with focus on current
+// tile you moved with H, J, K or L. Maybe also add arrow keys.
+import { keyBindings, keyCheck } from './keybindings.js';
+// Add keyBindings global registry of used keys
 // And don't allow to add new values at low level - through using const
 import calculator from './calculator.js';
 // Separate the UI-Displaying logic from the actual calculator
@@ -48,3 +56,8 @@ clearEntry.addEventListener('click', () => {
 
 // TO-DO:
 // clearAll - once I got history
+
+
+document.addEventListener('keydown', e => {
+  keyCheck(e, keyBindings)
+});

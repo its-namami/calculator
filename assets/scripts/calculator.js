@@ -101,8 +101,6 @@ const calculator = {
     this.number2 = '';
     this.operator = undefined;
 
-    if (this.result.toString().replace('.', '').length > 10) this.result = this.result.toExponential();
-
     resultElement.textContent = this.result;
 
     if (this.result.toString().indexOf('.') !== -1) this.decimalSignAdded = true;
