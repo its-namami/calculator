@@ -15,7 +15,7 @@ const keyBindings = {
       {
 	key: '0',
       },
-
+      // if user creates another binding, this is what it would look like
       {
 	key: 'o',
       },
@@ -111,15 +111,6 @@ const keyBindings = {
 	key: 'm',
       },
     ],
-    'oper-exponent': [
-      {
-	key: '^',
-      },
-
-      {
-	key: 'e',
-      },
-    ],
   },
 
   special: {
@@ -169,8 +160,7 @@ const keyBindings = {
   },
 }
 
-const keyCheck = (event, keybindings = keyBindings) => {
-  console.log(keyBindings);
+const keyCheck = (event, keybindings) => {
   Object.entries(keybindings).forEach(property => {
     const keyCategory = property[0];
     Object.entries(property[1]).forEach(eliteProperty => {

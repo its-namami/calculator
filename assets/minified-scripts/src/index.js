@@ -16,10 +16,6 @@ import { keyBindings, keyCheck } from './keybindings.js';
 import calculator from './calculator.js';
 // Separate the UI-Displaying logic from the actual calculator
 // Maybe even dynamically create new calculator directly in JS
-import regionalSymbols from './symbols.js';
-// I want to convert numbers to real words 
-// This should be done by having "verbose" and "normal" mode
-// and obviously auto insert the regional symbols
 const numbers = document.querySelectorAll('.number');
 const operators = document.querySelectorAll('.operator');
 const decimalSign = document.querySelector('#decimal-sign');
@@ -67,8 +63,5 @@ clearEntry.addEventListener('click', () => {
 
 
 document.addEventListener('keydown', e => {
-  // old
-  // keyCheck(e, keyBindings)
-  // new
-  keyCheck(e)
+  keyCheck(e, keyBindings)
 });

@@ -54,16 +54,17 @@ const calculator = {
     const maxLen = this.decimalMaxLen(decimal1, decimal2);
     console.log(decimal1, decimal2)
     return decimal1.moveDecimalToRight(maxLen) / decimal2.moveDecimalToRight(maxLen);
+    // return (+decimal1.number * 10 ** maxLen) / (+decimal2.number * 10 ** maxLen);
   },
 
-  exponent: function(number = this.number1, power = this.number2) {
+  exponent: function(number, power) {
     if (power === 0) return 1;
     
 
     let value = number;
 
     for (let i = 1; i < Math.abs(power); i++) {
-      value = this.multiply(value, number);
+      value *= number;
     }
     
     if (power < 0) return 1 / value;
@@ -89,9 +90,6 @@ const calculator = {
 	  break;
 	case '/':
 	  this.result = this.divide();
-	  break;
-	case '^':
-	  this.result = this.exponent();
 	  break;
       }
 
@@ -157,9 +155,6 @@ const calculator = {
 	break;
       case 'oper-divide':
 	this.operator = '/';
-	break;
-      case 'oper-exponent':
-	this.operator = '^';
 	break;
     }
   },
