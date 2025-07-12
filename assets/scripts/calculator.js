@@ -27,12 +27,12 @@ const calculator = {
   },
 
   add: function(num1 = this.number1, num2 = this.number2) {
-    const decimal1 = new Decimal(num1);
-    const decimal2 = new Decimal(num2);
-    const maxLen = this.decimalMaxLen(decimal1, decimal2);
-    decimal1.growToSizeDecimal(maxLen);
-    decimal2.growToSizeDecimal(maxLen);
-    return (+decimal1.customLenNumber + +decimal2.customLenNumber) / 10 ** maxLen;
+    // const decimal1 = new Decimal(num1);
+    // const decimal2 = new Decimal(num2);
+    // const maxLen = this.decimalMaxLen(decimal1, decimal2);
+    // decimal1.growToSizeDecimal(maxLen);
+    // decimal2.growToSizeDecimal(maxLen);
+    // return (+decimal1.customLenNumber + +decimal2.customLenNumber) / 10 ** maxLen;
   },
 
   subtract: function(num1 = this.number1, num2 = this.number2) {
@@ -111,6 +111,8 @@ const calculator = {
   },
 
   addNumber: function(number) {
+    console.log(this.decimalSignAdded);
+
     if (number === '.') {
       if (this.operator === undefined) this.number1 += '.';
       else this.number2 += '.';
@@ -119,11 +121,18 @@ const calculator = {
       if (this.number1 === '' && number === '-') {
 	this.number1 += number;
 	this.updateUI(this.number1);
-      } else {
-	this.number1 += number.toString();
-	if (!this.decimalSignAdded) this.number1 = (+this.number1).toString();
-	this.updateUI(this.number1);
+      } else if (this.decimalSignAdded) {
+	// To-Do: probs just use Decimal class and grab the decimal
+      } else if (!this.decimalSignAdded) {
+	this.number1 = BigInt(this.number1) * BigInt(10) + BigInt(number);
+	this.number1 = new Decimal(this.number1);
+	console.log(this.number1)
       }
+	//      } else {
+	// this.number1 += number.toString();
+	// if (!this.decimalSignAdded) this.number1 = (+this.number1).toString();
+	// this.updateUI(this.number1);
+	//      }
     }
     else {
       this.number2 += number.toString();
@@ -135,8 +144,8 @@ const calculator = {
   addDecimalSign: function() {
     // ignore decimal signs after the first one set
     if (!this.decimalSignAdded) {
-      this.addNumber('.');
       this.decimalSignAdded = true;
+      this.addNumber('.');
       this.operator === undefined ? this.updateUI(this.number1) : this.updateUI(this.number2);
     }
   },

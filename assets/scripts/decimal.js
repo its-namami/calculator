@@ -1,23 +1,47 @@
+// To-Do
+// Make everything BigInt,
+// Add "toNegative" function
 class Decimal {
-  constructor (value) {
-    this.number = +value;
-    this.numberString = this.number.toString();
-    this.decimalIndex = this.numberString.indexOf('.');
+  constructor (number) {
+    let numberString = number.toString();
+    let decimalPointPosition = numberString.indexOf('.') + 1;
 
-    if (this.decimalIndex !== -1) this.decimalLen = this.numberString.split('.')[1].toString().length
-    else this.decimalLen = 0;
+    this.noDecimalNumber = numberString.replace('.', '');
+    this.customLenNumber = this.noDecimalNumber;
 
-    this.numNoDecimal = this.number.toString().replace('.', '');
-    this.numNoDecimalLen = this.numNoDecimal.length;
-    this.customLenNumber = this.numNoDecimal;
+    if (decimalPointPosition === 0) {
+      this.decimalLen = 0;
+    } else {
+      this.decimalLen = numberString.length - decimalPointPosition;
+    }
   }
 
-  growToSizeDecimal (value) {
-    // const endZeroesNeeded = value - this.numNoDecimalLen;
+  changeNumbers(changeToValue) {
+    this.noDecimalNumber = changeToValue;
+    this.customLenNumber = changeToValue;
+  }
+
+  makeNegative() {
+    if (this.noDecimalNumber[0] !== '-') this.changeNumbers('-' + this.noDecimalNumber);
+  }
+
+  makePositive() {
+    if (this.noDecimalNumber[0] === '-') this.changeNumbers(this.noDecimalNumber.slice(1));
+  }
+
+  appendDigit(number) {
+    this.changeNumbers(this.noDecimalNumber + number.toString());
+  }
+
+  deleteLastDigit() {
+    this.changeNumbers(this.noDecimalNumber.toString().slice(0, -1));
+  }
+
+  growToSizeAtDecimal (value) {
     this.addedEndZeroes = value - this.decimalLen;
 
     if (this.addedEndZeroes === 0) this.customLenNumber;
-    else if (this.addedEndZeroes > 0) this.customLenNumber = (this.numNoDecimal.toString() + '0'.repeat(this.addedEndZeroes)).toString();
+    else if (this.addedEndZeroes > 0) this.customLenNumber = (this.noDecimalNumber.toString() + '0'.repeat(this.addedEndZeroes)).toString();
     else {
       console.error(`Error: Impossible state - endZeroesNeeded cannot be less than zero (${this.addedEndZeroes}).`);
       throw new Error('Invalid calculation result: \'endZeroesNeeded\' is negative.');

@@ -170,7 +170,7 @@ const keyBindings = {
 }
 
 const keyCheck = (event, keybindings = keyBindings) => {
-  console.log(keyBindings);
+  // console.log(keyBindings);
   Object.entries(keybindings).forEach(property => {
     const keyCategory = property[0];
     Object.entries(property[1]).forEach(eliteProperty => {
