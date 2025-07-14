@@ -1,5 +1,4 @@
 import Decimal from './decimal.js';
-window.Decimal = Decimal;
 
 const resultElement = document.querySelector('#result');
 const calculator = {

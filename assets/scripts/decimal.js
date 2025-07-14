@@ -1,77 +1,107 @@
 class Decimal {
   #isNegative;
-  #digitsString;
+  #absDigits;
   #decimalLen;
-  #isDecimal;
-  #negativeSignDigits;
+  #rawDigits;
 
   constructor (number) {
+    if (!Number.isFinite(+number)) return Decimal.#error('badNum', number);
+
     let numberString = number.toString();
     let decimalPointPosition = numberString.indexOf('.') + 1;
 
-    this.#digitsString = numberString.replace(/-|\./g, '');
+    this.#absDigits = numberString.replace(/-|\./g, '');
     this.#isNegative = numberString[0] === '-';
-    this.#negativeSignDigits = (this.#isNegative ? '-' + this.#digitsString : this.#digitsString);
+    this.#rawDigits = (this.#isNegative ? '-' + this.#absDigits : this.#absDigits);
 
     if (decimalPointPosition === 0) {
       this.#decimalLen = 0;
-      this.#isDecimal = false;
     } else {
       this.#decimalLen = numberString.length - decimalPointPosition;
-      this.#isDecimal = true;
     }
   }
 
-  appendDigit(number) {
-    this.#digitsString(this.#digitsString + number.toString());
-    if (this.#isDecimal) this.#decimalLen++;
+  get value() {
+    return Decimal.#normalize(this.#rawDigits, this.#decimalLen);
   }
 
-  deleteFromEnd(digitCount = 1) {
-    if (this.#digitsString === '' && this.#isNegative) this.#isNegative = false;
-    this.#digitsString = (this.#digitsString.toString().slice(0, this.#digitsString.length - digitCount));
-    if (this.#decimalLen > 0) this.#decimalLen--;
+  add(secondDecimal) {
+    const firstDecimal = this.#getCopy();
+
+    if (secondDecimal instanceof Decimal === false) secondDecimal = new Decimal(secondDecimal);
+
+    const maxLen = Math.max(firstDecimal.#absDigits.length, secondDecimal.#absDigits.length);
+    const maxDecimalLen = Math.max(firstDecimal.#decimalLen, secondDecimal.#decimalLen);
+    const firstDecimalValue = BigInt(firstDecimal.#growDecimal(maxDecimalLen));
+    const secondDecimalValue = BigInt(secondDecimal.#growDecimal(maxDecimalLen));
+    const numberResult = firstDecimalValue + secondDecimalValue;
+
+    return new Decimal(Decimal.#normalize(numberResult, maxDecimalLen));
   }
 
-  #getNumberString() {
-    return (
-      this.#digitsString.slice(0,this.#digitsString.length - this.#decimalLen)
-      + '.'
-      + this.#digitsString.slice(this.#digitsString.length - this.#decimalLen)
-    );
+  multiply(secondDecimal) {
+    const firstDecimal = this.#getCopy();
+
+    if (secondDecimal instanceof Decimal === false) secondDecimal = new Decimal(secondDecimal);
+
+    const sumLen = firstDecimal.#decimalLen + secondDecimal.#decimalLen;
+    const numberResult = BigInt(firstDecimal.#rawDigits) * BigInt(secondDecimal.#rawDigits);
+
+    return new Decimal(Decimal.#normalize(numberResult, sumLen));
   }
 
-  #copy() {
-    let objectCopy = '';
+  divide(secondDecimal) {
+    const firstDecimal = this.#getCopy();
 
-    if (this.#isNegative) objectCopy += '-';
+    if (secondDecimal instanceof Decimal === false) secondDecimal = new Decimal(secondDecimal);
 
-    objectCopy += this.#getNumberString();
+    const maxLen = Math.max(firstDecimal.#absDigits.length, secondDecimal.#absDigits.length);
+    const maxDecimalLen = Math.max(firstDecimal.#decimalLen, secondDecimal.#decimalLen);
+    const firstDecimalValue = BigInt(firstDecimal.#growDecimal(maxDecimalLen));
+    const secondDecimalValue = BigInt(secondDecimal.#growDecimal(maxDecimalLen));
 
-    return new Decimal(objectCopy);
+    if (secondDecimalValue === BigInt(0)) return Decimal.#error('divideZero');
+
+    let newFirstDecimalValue = firstDecimalValue;
+    let decimals = 0;
+
+    for (let i = 0; i < 15; i++) {
+      if (newFirstDecimalValue % secondDecimalValue !== BigInt(0)) {
+        newFirstDecimalValue *= BigInt(10);
+        decimals++;
+      } else {
+        break;
+      }
+    }
+
+    const result = (newFirstDecimalValue / secondDecimalValue).toString();
+
+    return new Decimal(Decimal.#normalize(result, decimals));
   }
 
-  static #getSumLen(val1, val2) {
-    return val1.toString().length + val2.toString().length;
-  }
-
-  static #getMaxLen(val1, val2) {
-    let val1Len = val1.toString().length;
-    let val2Len = val2.toString().length;
-
-    return val1Len > val2Len ? val1Len : val2Len;
-  }
-
-  #getRelativeValue(element) {
-    return this.#isNegative ? '-' + this.#digitsString : this.#digitsString;
+  #getCopy() {
+    return new Decimal(this.value);
   }
 
   #growDecimal(scale) {
     const decimalsNeeded = scale - this.#decimalLen;
 
-    if (decimalsNeeded < 0) throw new Error (`Cannot have less than 0 decimals: (${decimalsNeeded})`);
+    if (decimalsNeeded < 0) return Decimal.#error('badScale', decimalsNeeded);
 
-    return this.#negativeSignDigits + '0'.repeat(decimalsNeeded);
+    return this.#rawDigits + '0'.repeat(decimalsNeeded);
+  }
+
+  static #error(error = 'default', info = undefined) {
+    switch (error) {
+      case 'badNum':
+        throw new Error (`Incorrect number: ${info}!`);
+      case 'badScale':
+        throw new Error (`Cannot have less than 0 decimals: (${info})!`);
+      case 'divideZero':
+        throw new Error ('Cannot divide by zero!');
+      case 'default':
+        throw new Error ('Fatal error, that\'s all we know...');
+    }
   }
 
   static #normalize(digits, decimals) {
@@ -79,30 +109,14 @@ class Decimal {
     digits = (negativeSign === '-' ? digits.toString().slice(1) : digits.toString());
     const digitsLength = digits.length - (digits[0] === '-' ? 1 : 0);
 
-    if (decimals === 0) {
-      return digits;
+    if (decimals === 0 || decimals === undefined) {
+      return negativeSign + digits;
     } else if (digitsLength > decimals) {
       return negativeSign + digits.slice(0, digits.length - decimals) + '.' + digits.slice(digits.length - decimals);
     } else {
       return negativeSign + '0.' + '0'.repeat(decimals - digitsLength) + digits;
     }
   }
-
-  add(number2) {
-    const number1 = this.#copy();
-
-    if (number2 instanceof Decimal === false) number2 = new Decimal(number2);
-
-    const maxLen = Decimal.#getMaxLen(number1.#digitsString, number2.#digitsString);
-    const maxDecimalLen = Math.max(number1.#decimalLen, number2.#decimalLen);
-    const number1Value = BigInt(number1.#growDecimal(maxDecimalLen));
-    const number2Value = BigInt(number2.#growDecimal(maxDecimalLen));
-    const numberResult = number1Value + number2Value;
-
-
-    return Decimal.#normalize(numberResult, maxDecimalLen);
-  }
-
 }
 
 export default Decimal;

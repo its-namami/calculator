@@ -20,10 +20,6 @@ import regionalSymbols from './symbols.js';
 // I want to convert numbers to real words 
 // This should be done by having "verbose" and "normal" mode
 // and obviously auto insert the regional symbols
-//////////
-// Remove this later!!!
-window.calculator = calculator;
-//////////
 const numbers = document.querySelectorAll('.number');
 const operators = document.querySelectorAll('.operator');
 const decimalSign = document.querySelector('#decimal-sign');
