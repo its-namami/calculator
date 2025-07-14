@@ -1,89 +1,108 @@
-// To-Do
-// Make everything BigInt,
-// Add "toNegative" function
 class Decimal {
+  #isNegative;
+  #digitsString;
+  #decimalLen;
+  #isDecimal;
+  #negativeSignDigits;
+
   constructor (number) {
     let numberString = number.toString();
     let decimalPointPosition = numberString.indexOf('.') + 1;
 
-    this.noDecimalNumber = numberString.replace('.', '');
-    this.customLenNumber = this.noDecimalNumber;
+    this.#digitsString = numberString.replace(/-|\./g, '');
+    this.#isNegative = numberString[0] === '-';
+    this.#negativeSignDigits = (this.#isNegative ? '-' + this.#digitsString : this.#digitsString);
 
     if (decimalPointPosition === 0) {
-      this.decimalLen = 0;
+      this.#decimalLen = 0;
+      this.#isDecimal = false;
     } else {
-      this.decimalLen = numberString.length - decimalPointPosition;
+      this.#decimalLen = numberString.length - decimalPointPosition;
+      this.#isDecimal = true;
     }
-  }
-
-  changeNumbers(changeToValue) {
-    this.noDecimalNumber = changeToValue;
-    this.customLenNumber = changeToValue;
-  }
-
-  makeNegative() {
-    if (this.noDecimalNumber[0] !== '-') this.changeNumbers('-' + this.noDecimalNumber);
-  }
-
-  makePositive() {
-    if (this.noDecimalNumber[0] === '-') this.changeNumbers(this.noDecimalNumber.slice(1));
   }
 
   appendDigit(number) {
-    this.changeNumbers(this.noDecimalNumber + number.toString());
+    this.#digitsString(this.#digitsString + number.toString());
+    if (this.#isDecimal) this.#decimalLen++;
   }
 
-  deleteLastDigit() {
-    this.changeNumbers(this.noDecimalNumber.toString().slice(0, -1));
+  deleteFromEnd(digitCount = 1) {
+    if (this.#digitsString === '' && this.#isNegative) this.#isNegative = false;
+    this.#digitsString = (this.#digitsString.toString().slice(0, this.#digitsString.length - digitCount));
+    if (this.#decimalLen > 0) this.#decimalLen--;
   }
 
-  growToSizeAtDecimal (value) {
-    this.addedEndZeroes = value - this.decimalLen;
-
-    if (this.addedEndZeroes === 0) this.customLenNumber;
-    else if (this.addedEndZeroes > 0) this.customLenNumber = (this.noDecimalNumber.toString() + '0'.repeat(this.addedEndZeroes)).toString();
-    else {
-      console.error(`Error: Impossible state - endZeroesNeeded cannot be less than zero (${this.addedEndZeroes}).`);
-      throw new Error('Invalid calculation result: \'endZeroesNeeded\' is negative.');
-    }
+  #getNumberString() {
+    return (
+      this.#digitsString.slice(0,this.#digitsString.length - this.#decimalLen)
+      + '.'
+      + this.#digitsString.slice(this.#digitsString.length - this.#decimalLen)
+    );
   }
 
-  moveDecimalToRight (places) {
-    const someCalculationIdk = this.decimalLen - places;
-    this.customLenNumber = this.customLenNumber.replace('.', '');
-    if (places < 0) {
-      return this.moveDecimalToLeft(-places);
-    } else if (someCalculationIdk > 0) {
-      this.decimalLen = someCalculationIdk;
-      return this.customLenNumber = this.moveDecimalToLeft(someCalculationIdk);
-    }
-    else {
-      this.decimalLen = 0;
+  #copy() {
+    let objectCopy = '';
 
-      if (someCalculationIdk < 0) this.customLenNumber = this.customLenNumber + '0'.repeat(-someCalculationIdk);
+    if (this.#isNegative) objectCopy += '-';
 
-      if (someCalculationIdk === 0) this.customLenNumber;
+    objectCopy += this.#getNumberString();
 
-      return this.customLenNumber = (+this.customLenNumber).toString();
-    }
+    return new Decimal(objectCopy);
   }
 
-  moveDecimalToLeft (places) {
-    this.customLenNumber = this.customLenNumber.replace('.', '');
+  static #getSumLen(val1, val2) {
+    return val1.toString().length + val2.toString().length;
+  }
 
-    if (places < 0) {
-      return this.moveDecimalToRight(-places);
-    } else if (places < this.customLenNumber.length) {
-      places = this.customLenNumber.length - places;
-      this.decimalLen += places;
-      this.customLenNumber = this.customLenNumber.slice(0, places) + '.' + this.customLenNumber.slice(places);
-      // return HAVE TO SEE DECIMAL LEN VS WHOLE NUM LEN (+this.customLenNumber).toString()
-      return (+this.customLenNumber).toString()
+  static #getMaxLen(val1, val2) {
+    let val1Len = val1.toString().length;
+    let val2Len = val2.toString().length;
+
+    return val1Len > val2Len ? val1Len : val2Len;
+  }
+
+  #getRelativeValue(element) {
+    return this.#isNegative ? '-' + this.#digitsString : this.#digitsString;
+  }
+
+  #growDecimal(scale) {
+    const decimalsNeeded = scale - this.#decimalLen;
+
+    if (decimalsNeeded < 0) throw new Error (`Cannot have less than 0 decimals: (${decimalsNeeded})`);
+
+    return this.#negativeSignDigits + '0'.repeat(decimalsNeeded);
+  }
+
+  static #normalize(digits, decimals) {
+    const negativeSign = (digits.toString()[0] === '-' ? '-' : '');
+    digits = (negativeSign === '-' ? digits.toString().slice(1) : digits.toString());
+    const digitsLength = digits.length - (digits[0] === '-' ? 1 : 0);
+
+    if (decimals === 0) {
+      return digits;
+    } else if (digitsLength > decimals) {
+      return negativeSign + digits.slice(0, digits.length - decimals) + '.' + digits.slice(digits.length - decimals);
     } else {
-      places -= this.customLenNumber.length;
-      return this.customLenNumber = (+(this.customLenNumber = '0.' + '0'.repeat(places) + this.customLenNumber)).toString();
+      return negativeSign + '0.' + '0'.repeat(decimals - digitsLength) + digits;
     }
   }
+
+  add(number2) {
+    const number1 = this.#copy();
+
+    if (number2 instanceof Decimal === false) number2 = new Decimal(number2);
+
+    const maxLen = Decimal.#getMaxLen(number1.#digitsString, number2.#digitsString);
+    const maxDecimalLen = Math.max(number1.#decimalLen, number2.#decimalLen);
+    const number1Value = BigInt(number1.#growDecimal(maxDecimalLen));
+    const number2Value = BigInt(number2.#growDecimal(maxDecimalLen));
+    const numberResult = number1Value + number2Value;
+
+
+    return Decimal.#normalize(numberResult, maxDecimalLen);
+  }
+
 }
 
-export default Decimal
+export default Decimal;
