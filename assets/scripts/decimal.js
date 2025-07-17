@@ -29,16 +29,17 @@ class Decimal {
     const firstDecimal = this.#getCopy();
 
     const precision = BigInt(15);
-    const seeking = (BigInt(firstDecimal.value) * BigInt(10) ** (precision * BigInt(2))).toString().slice(0, Number(precision));
+    const seeking = BigInt(firstDecimal.value) * BigInt(10) ** precision;
     let lowerBound = BigInt(1) * BigInt(10) ** (precision);
     let upperBound = BigInt(firstDecimal.value) * BigInt(10) ** (precision);
+    let tolerance = BigInt(10) ** BigInt(firstDecimal.#rawDigits.length);
 
     const calc = {
       get avg() {
         return (lowerBound + upperBound) / BigInt(2);
       },
       get avgsq() {
-        return (this.avg ** BigInt(2)).toString().slice(0, Number(precision));
+        return (this.avg ** BigInt(2)) / BigInt(10) ** precision;
       }
     };
 
@@ -46,15 +47,20 @@ class Decimal {
     for (let i = 0; i < 500; i++) {
       console.log(`Current variables:\nAvg: ${calc.avg}\nAvgSq: ${calc.avgsq}\nSeeking: ${seeking}\nRange: ${lowerBound}~${upperBound}`);
 
-      if (calc.avgsq > seeking) {
-        console.info(`Need less, because ${calc.avgsq} > ${seeking}`);
-        upperBound = calc.avg;
-      } else if (calc.avgsq < seeking) {
-        console.info(`Need more, because ${calc.avgsq} < ${seeking}`);
-        lowerBound = calc.avg;
-      } else if (calc.avgsq === seeking) {
+      30 === 30
+
+      if (calc.avgsq + tolerance > seeking && calc.avgsq - tolerance < seeking) {
         console.info(`Found it! The square root of ${seeking} is: ${calc.avg}`);
+        console.info(`Iterations it took: ${i}`);
         break;
+      } else {
+        if (calc.avgsq > seeking) {
+          console.info(`Need less, because ${calc.avgsq} > ${seeking}`);
+          upperBound = calc.avg;
+        } else {
+          console.info(`Need more, because ${calc.avgsq} < ${seeking}`);
+          lowerBound = calc.avg;
+        }
       }
     }
   }
