@@ -47,8 +47,6 @@ class Decimal {
     for (let i = 0; i < 500; i++) {
       console.log(`Current variables:\nAvg: ${calc.avg}\nAvgSq: ${calc.avgsq}\nSeeking: ${seeking}\nRange: ${lowerBound}~${upperBound}`);
 
-      30 === 30
-
       if (calc.avgsq + tolerance > seeking && calc.avgsq - tolerance < seeking) {
         console.info(`Found it! The square root of ${seeking} is: ${calc.avg}`);
         console.info(`Iterations it took: ${i}`);
