@@ -1,4 +1,8 @@
 import Decimal from './decimal.js';
+//////////
+// Remove this later!!!
+window.Decimal = Decimal;
+//////////
 
 const resultElement = document.querySelector('#result');
 const calculator = {
@@ -18,97 +22,6 @@ const calculator = {
     resultElement.textContent = 'ERROR';
   },
 
-  decimalMaxLen: function(decimal1, decimal2) {
-    return Math.max(decimal1.decimalLen, decimal2.decimalLen)
-  },
-
-  decimalSumLen: function(decimal1, decimal2) {
-    return decimal1.decimalLen + decimal2.decimalLen;
-  },
-
-  add: function(num1 = this.number1, num2 = this.number2) {
-    // const decimal1 = new Decimal(num1);
-    // const decimal2 = new Decimal(num2);
-    // const maxLen = this.decimalMaxLen(decimal1, decimal2);
-    // decimal1.growToSizeDecimal(maxLen);
-    // decimal2.growToSizeDecimal(maxLen);
-    // return (+decimal1.customLenNumber + +decimal2.customLenNumber) / 10 ** maxLen;
-  },
-
-  subtract: function(num1 = this.number1, num2 = this.number2) {
-    return this.add(num1, -num2);
-  },
-
-  multiply: function(num1 = this.number1, num2 = this.number2) {
-    const decimal1 = new Decimal(num1);
-    const decimal2 = new Decimal(num2);
-    const maxLen = this.decimalMaxLen(decimal1, decimal2);
-    const sumLen = this.decimalSumLen(decimal1, decimal2);
-    return (+decimal1.customLenNumber * +decimal2.customLenNumber) / 10 ** sumLen;
-  },
-
-  divide: function(num1 = this.number1, num2 = this.number2) {
-    if (num2 === 0) return this.error();
-    const decimal1 = new Decimal(num1);
-    const decimal2 = new Decimal(num2);
-    const maxLen = this.decimalMaxLen(decimal1, decimal2);
-    console.log(decimal1, decimal2)
-    return decimal1.moveDecimalToRight(maxLen) / decimal2.moveDecimalToRight(maxLen);
-  },
-
-  exponent: function(number = this.number1, power = this.number2) {
-    if (power === 0) return 1;
-    
-
-    let value = number;
-
-    for (let i = 1; i < Math.abs(power); i++) {
-      value = this.multiply(value, number);
-    }
-    
-    if (power < 0) return 1 / value;
-
-    return value;
-  },
-
-  calculate: function() {
-    if (!this.validate()) return this.error();
-    if (this.number2 === '0' && this.operator === '/') {
-      this.reset();
-      this.result = 'Cannot divide through 0';
-    } else if (this.number2 !== '') {
-      switch (this.operator) {
-	case '+':
-	  this.result = this.add();
-	  break;
-	case '-':
-	  this.result = this.subtract();
-	  break;
-	case '*':
-	  this.result = this.multiply();
-	  break;
-	case '/':
-	  this.result = this.divide();
-	  break;
-	case '^':
-	  this.result = this.exponent();
-	  break;
-      }
-
-      this.number1 = this.result;
-    } else {
-      this.result = this.number1;
-    }
-
-    this.number2 = '';
-    this.operator = undefined;
-
-    resultElement.textContent = this.result;
-
-    if (this.result.toString().indexOf('.') !== -1) this.decimalSignAdded = true;
-
-    this.result = '';
-  },
 
   addNumber: function(number) {
     console.log(this.decimalSignAdded);

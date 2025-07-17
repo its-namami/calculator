@@ -5,7 +5,7 @@ class Decimal {
   #rawDigits;
 
   constructor (number) {
-    if (!Number.isFinite(+number)) return Decimal.#error('badNum', number);
+    if (!Number.isFinite(Number(number))) return Decimal.#error('badNum', number);
 
     let numberString = number.toString();
     let decimalPointPosition = numberString.indexOf('.') + 1;
@@ -23,6 +23,40 @@ class Decimal {
 
   get value() {
     return Decimal.#normalize(this.#rawDigits, this.#decimalLen);
+  }
+
+  sqrt() {
+    const firstDecimal = this.#getCopy();
+
+    const precision = BigInt(15);
+    const seeking = (BigInt(firstDecimal.value) * BigInt(10) ** (precision * BigInt(2))).toString().slice(0, Number(precision));
+    let lowerBound = BigInt(1) * BigInt(10) ** (precision);
+    let upperBound = BigInt(firstDecimal.value) * BigInt(10) ** (precision);
+
+    const calc = {
+      get avg() {
+        return (lowerBound + upperBound) / BigInt(2);
+      },
+      get avgsq() {
+        return (this.avg ** BigInt(2)).toString().slice(0, Number(precision));
+      }
+    };
+
+    // should be "while"-loop, once I grasp the logic
+    for (let i = 0; i < 500; i++) {
+      console.log(`Current variables:\nAvg: ${calc.avg}\nAvgSq: ${calc.avgsq}\nSeeking: ${seeking}\nRange: ${lowerBound}~${upperBound}`);
+
+      if (calc.avgsq > seeking) {
+        console.info(`Need less, because ${calc.avgsq} > ${seeking}`);
+        upperBound = calc.avg;
+      } else if (calc.avgsq < seeking) {
+        console.info(`Need more, because ${calc.avgsq} < ${seeking}`);
+        lowerBound = calc.avg;
+      } else if (calc.avgsq === seeking) {
+        console.info(`Found it! The square root of ${seeking} is: ${calc.avg}`);
+        break;
+      }
+    }
   }
 
   add(secondDecimal) {
