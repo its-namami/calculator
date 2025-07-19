@@ -1,7 +1,7 @@
-import Decimal from './decimal.js';
+import Mafs from './mafs.js';
 //////////
 // Remove this later!!!
-window.Decimal = Decimal;
+window.Mafs = Mafs;
 //////////
 
 const resultElement = document.querySelector('#result');
