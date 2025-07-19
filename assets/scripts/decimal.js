@@ -84,6 +84,7 @@ class Decimal {
         i++;
 
         if (calc.avgsq >= seeking && calc.avgsq - tolerance < seeking) {
+          break;
         } else {
           if (calc.avgsq > seeking) {
             upperBound = calc.avg;
@@ -192,6 +193,8 @@ class Decimal {
 
   static #warning(warning = 'default', info = undefined) {
     switch (warning) {
+      case 'sqrtIsOverItterated':
+        console.warn(`Sqrt calculation went above planned iterations: forcefully returning current close-enough sqrt`);
       case 'inputNumber':
         console.warn(`Don't use numbers: please pass as string or bigint instead.`);
         break;
