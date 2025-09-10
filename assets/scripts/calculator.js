@@ -1,125 +1,91 @@
-import Mafs from './mafs.js';
+import DXCalc from '../../node_modules/dx-calc/dxCalc.js'
+
+
 //////////
 // Remove this later!!!
-window.Mafs = Mafs;
+window.DXCalc = DXCalc;
 //////////
 
-const resultElement = document.querySelector('#result');
-const calculator = {
-  number1: '',
-  operator: undefined,
-  number2: '',
-  decimalSignAdded: false,
-  result: '',
-  pressedZeroInt: false,
+export default class Calculator {
+  static #numberStack = [''];
+  static #operatorStack = [];
 
-  validate: function() {
-    return Number.isFinite(+this.number1) && Number.isFinite(+this.number2);
-  },
+  static #binaryOperations = {
+    '+': (x, y) => DXCalc.number(x).add(y).value,
+    '-': (x, y) => DXCalc.number(x).subtract(y).value,
+    '*': (x, y) => DXCalc.number(x).multiply(y).value,
+    '/': (x, y) => DXCalc.number(x).divide(y).value,
+  }
 
-  error: function() {
-    this.reset();
-    resultElement.textContent = 'ERROR';
-  },
+  static #unaryOperations = {
+    '√': x => DXCalc.number(x).sqrt().value,
+  }
 
 
-  addNumber: function(number) {
-    console.log(this.decimalSignAdded);
+  static addNumber(stringNumber) {
+    const lastNumber = Calculator.#numberStack.pop();
+    const newNumber = lastNumber + stringNumber;
+    Calculator.#numberStack.push(newNumber);
+  }
 
-    if (number === '.') {
-      if (this.operator === undefined) this.number1 += '.';
-      else this.number2 += '.';
-      this.decimalSignAdded = true;
-    } else if (this.operator === undefined) {
-      if (this.number1 === '' && number === '-') {
-	this.number1 += number;
-	this.updateUI(this.number1);
-      } else if (this.decimalSignAdded) {
-	// To-Do: probs just use Decimal class and grab the decimal
-      } else if (!this.decimalSignAdded) {
-	this.number1 = BigInt(this.number1) * BigInt(10) + BigInt(number);
-	this.number1 = new Decimal(this.number1);
-	console.log(this.number1)
-      }
-	//      } else {
-	// this.number1 += number.toString();
-	// if (!this.decimalSignAdded) this.number1 = (+this.number1).toString();
-	// this.updateUI(this.number1);
-	//      }
+  static addOperator(operator) {
+    Calculator.#operatorStack.push(operator);
+    Calculator.#makeCalculation();
+  }
+
+  static #makeCalculation() {
+    const latestOperator = () => Calculator.#operatorStack.at(-1);
+    const previousOperator = () => Calculator.#operatorStack.at(-2);
+    const isUnary = (operator) => Calculator.#unaryOperations.hasOwnProperty(operator);
+    const isBinary = (operator) => Calculator.#binaryOperations.hasOwnProperty(operator);
+
+    console.log(`All operators: ${Calculator.#operatorStack}`);
+    console.log(`All numbers: ${Calculator.#numberStack}`);
+    // calculate immediately
+    if (isUnary(previousOperator())) {
+      const poppedNumber = Calculator.#numberStack.pop();
+      const calculation = Calculator.#unaryOperations[previousOperator()];
+      const result = calculation(poppedNumber);
+      Calculator.#numberStack.push(result);
+      Calculator.#operatorStack.splice(-2, 1);
+      console.log('performed unary');
     }
-    else {
-      this.number2 += number.toString();
-      if (!this.decimalSignAdded) this.number2 = (+this.number2).toString();
-      this.updateUI(this.number2);
+
+    if (!isUnary(latestOperator()) && isBinary(previousOperator())) {
+      // pops 2 last numbers, calculates them and pushes back result
+      const poppedLastNumbers = Calculator.#numberStack.splice(-2, 2);
+      const calculation = Calculator.#binaryOperations[previousOperator()];
+      const result = calculation(...poppedLastNumbers);
+      Calculator.#numberStack.push(result);
+      Calculator.#operatorStack.splice(-2, 1);
+      console.log('performed binary');
     }
-  },
 
-  addDecimalSign: function() {
-    // ignore decimal signs after the first one set
-    if (!this.decimalSignAdded) {
-      this.decimalSignAdded = true;
-      this.addNumber('.');
-      this.operator === undefined ? this.updateUI(this.number1) : this.updateUI(this.number2);
+    console.log(`Result: ${Calculator.#numberStack.at(-1)}`)
+
+    if (!isUnary(latestOperator())) {
+      Calculator.#breakNumber();
     }
-  },
+  }
 
-  addOperator: function(operatorID) {
-    this.decimalSignAdded = false;
-    this.pressedZeroInt = false;
+  static #breakNumber() {
+    Calculator.#numberStack.push('');
+  }
 
-    switch (operatorID) {
-      case 'oper-plus':
-	this.operator = '+';
-	break;
-      case 'oper-minus':
-	this.operator = '-';
-	break;
-      case 'oper-multiply':
-	this.operator = '*';
-	break;
-      case 'oper-divide':
-	this.operator = '/';
-	break;
-      case 'oper-exponent':
-	this.operator = '^';
-	break;
+  static resetAll() {
+    Calculator.#numberStack = [''];
+    Calculator.#operatorStack = [];
+  }
+
+  static removeLastDigit() {
+    Calculator.#numberStack.push(Calculator.#numberStack.pop().slice(0, -1));
+  }
+
+  static conditionalAddDecimalSign() {
+    const hasDecimalSign = Calculator.#numberStack.at(-1).includes('.');
+
+    if (!hasDecimalSign) {
+      Calculator.#numberStack.push(Calculator.#numberStack.pop().concat('.'));
     }
-  },
-
-  deleteLastDigit: function() {
-    if (this.number1 !== '') {
-      if (this.operator === undefined) {
-	if (this.number1.toString().at(-1) === '.') this.decimalSignAdded = false;
-	this.number1 = this.number1.toString().substring(0, this.number1.length - 1);
-	this.updateUI(this.number1);
-      } else {
-	if (this.number2.toString().at(-1) === '.') this.decimalSignAdded = false;
-	this.number2 = this.number2.toString().substring(0, this.number2.length - 1);
-	this.updateUI(this.number2);
-      }
-    }
-  },
-
-  clearAll: function() {
-    // TO-DO
-  },
-
-  reset: function() {
-    this.number1 = '',
-    this.number2 = '',
-    this.result = '',
-    this.operator = undefined
-    this.decimalSignAdded = false;
-    this.updateUI(0);
-  },
-
-  history: {
-    // TO-DO (history as in logs, keeps (5?) last entries)
-  },
-
-  updateUI: function(element) {
-    resultElement.textContent = element;
-  },
-};
-
-export default calculator;
+  }
+}

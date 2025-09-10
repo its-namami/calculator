@@ -32,10 +32,41 @@ class Mafs {
     return Mafs.#normalize(this.#rawDigits, this.#decimalLength);
   }
 
+  sqrtNewton(number = undefined) {
+    number ??= this.value;
+
+    if (number instanceof Mafs === false) number = Mafs.number(number);
+
+    // newton's method for sqrt:
+    // x2 = x1 - f(x1)/f'(x1)
+    // f(x1) = x1*x1 - (number)
+    // f'(x1) = 2x;
+
+    // devtools
+    const precision = BigInt(15);
+    let x1 = BigInt(1) * BigInt(10) ** precision;
+
+    // const num = { value: 5 };
+    const fn = () => x1*x1 - BigInt(number.value) * BigInt(10) ** precision;
+    console.log(x1);
+    console.log(BigInt(number.value) * BigInt(10) ** precision);
+    console.log(fn())
+    const dfn = () => x1 * 2;
+
+    let x2 = () => {
+      x1 = x1 - fn()/dfn();
+      return x1;
+    }
+
+    for (let i = 0; i < 5; i++) {
+      console.log(x2());
+    }
+  }
+
   sqrt(number = undefined) {
     number ??= this.value;
 
-    if (number instanceof Mafs === false) number = Mafs.create(number);
+    if (number instanceof Mafs === false) number = Mafs.number(number);
 
     const precision = BigInt(17);
     let seeking = BigInt(number.#rawDigits) * BigInt(10) ** precision;
@@ -72,7 +103,7 @@ class Mafs {
       }
 
       if (i === 500) Mafs.#warning('sqrtOverItterated');
-      return Mafs.create(Mafs.#normalize(calculate.average, calculate.average.toString().length - Math.round(number.#absDigits.length / 2)));
+      return Mafs.number(Mafs.#normalize(calculate.average, calculate.average.toString().length - Math.round(number.#absDigits.length / 2)));
 
     } else if (!number.#isNegative) {
       seeking = seeking * BigInt(10) ** BigInt(number.#decimalLength);
@@ -94,7 +125,7 @@ class Mafs {
       }
 
       if (i === 500) Mafs.#warning('sqrtOverItterated');
-      return Mafs.create(Mafs.#normalize(calculate.average, calculate.average.toString().length + number.#absDigits.length / 2 - 1));
+      return Mafs.number(Mafs.#normalize(calculate.average, calculate.average.toString().length + number.#absDigits.length / 2 - 1));
     } else {
       return Mafs.#error('negSqrt');
     }
@@ -103,37 +134,37 @@ class Mafs {
   add(secondNumber) {
     const firstNumber = this.#getCopy();
 
-    if (secondNumber instanceof Mafs === false) secondNumber = Mafs.create(secondNumber);
+    if (secondNumber instanceof Mafs === false) secondNumber = Mafs.number(secondNumber);
 
     const maxLen = Math.max(firstNumber.#absDigits.length, secondNumber.#absDigits.length);
     const maxDecimalLen = Math.max(firstNumber.#decimalLength, secondNumber.#decimalLength);
-    const firstNumberValue = BigInt(firstNumber.#growDecimal(maxDecimalLen));
-    const secondNumberValue = BigInt(secondNumber.#growDecimal(maxDecimalLen));
+    const firstNumberValue = firstNumber.#growDecimal(maxDecimalLen);
+    const secondNumberValue = secondNumber.#growDecimal(maxDecimalLen);
     const numberResult = firstNumberValue + secondNumberValue;
 
-    return Mafs.create(Mafs.#normalize(numberResult, maxDecimalLen));
+    return Mafs.number(Mafs.#normalize(numberResult, maxDecimalLen));
   }
 
   multiply(secondNumber) {
     const firstNumber = this.#getCopy();
 
-    if (secondNumber instanceof Mafs === false) secondNumber = Mafs.create(secondNumber);
+    if (secondNumber instanceof Mafs === false) secondNumber = Mafs.number(secondNumber);
 
     const sumLen = firstNumber.#decimalLength + secondNumber.#decimalLength;
     const numberResult = BigInt(firstNumber.#rawDigits) * BigInt(secondNumber.#rawDigits);
 
-    return Mafs.create(Mafs.#normalize(numberResult, sumLen));
+    return Mafs.number(Mafs.#normalize(numberResult, sumLen));
   }
 
   divide(secondNumber) {
     const firstNumber = this.#getCopy();
 
-    if (secondNumber instanceof Mafs === false) secondNumber = Mafs.create(secondNumber);
+    if (secondNumber instanceof Mafs === false) secondNumber = Mafs.number(secondNumber);
 
     const maxLen = Math.max(firstNumber.#absDigits.length, secondNumber.#absDigits.length);
     const maxDecimalLen = Math.max(firstNumber.#decimalLength, secondNumber.#decimalLength);
-    let firstNumberValue = BigInt(firstNumber.#growDecimal(maxDecimalLen));
-    const secondNumberValue = BigInt(secondNumber.#growDecimal(maxDecimalLen));
+    let firstNumberValue = firstNumber.#growDecimal(maxDecimalLen);
+    const secondNumberValue = secondNumber.#growDecimal(maxDecimalLen);
 
     if (secondNumberValue === BigInt(0)) return Mafs.#error('divideZero');
 
@@ -150,10 +181,10 @@ class Mafs {
 
     const result = (firstNumberValue / secondNumberValue).toString();
 
-    return Mafs.create(Mafs.#normalize(result, decimals));
+    return Mafs.number(Mafs.#normalize(result, decimals));
   }
 
-  static create(input) {
+  static number(input) {
     if (typeof input === "number") {
       Mafs.#warning('inputNumber');
       return new Mafs(input.toString());
@@ -163,7 +194,7 @@ class Mafs {
   }
 
   #getCopy() {
-    return Mafs.create(this.value);
+    return Mafs.number(this.value);
   }
 
   #growDecimal(scale) {
@@ -171,7 +202,8 @@ class Mafs {
 
     if (decimalsNeeded < 0) return Mafs.#error('badScale', decimalsNeeded);
 
-    return this.#rawDigits + '0'.repeat(decimalsNeeded);
+    // return this.#rawDigits + '0'.repeat(decimalsNeeded);
+    return BigInt(this.#rawDigits) * BigInt(10) ** BigInt(decimalsNeeded);
   }
 
   static #error(error = 'default', info = undefined) {
