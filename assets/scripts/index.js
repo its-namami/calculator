@@ -13,7 +13,7 @@
 import { keyBindings, keyCheck } from './keybindings.js';
 // Add keyBindings global registry of used keys
 // And don't allow to add new values at low level - through using const
-import calculator from './calculator.js';
+import Calculator from './calculator.js';
 // Separate the UI-Displaying logic from the actual calculator
 // Maybe even dynamically create new calculator directly in JS
 import regionalSymbols from './symbols.js';
@@ -22,7 +22,7 @@ import regionalSymbols from './symbols.js';
 // and obviously auto insert the regional symbols
 //////////
 // Remove this later!!!
-window.calculator = calculator;
+window.Calculator = Calculator;
 //////////
 const numbers = document.querySelectorAll('.number');
 const operators = document.querySelectorAll('.operator');
@@ -31,39 +31,65 @@ const equalSign = document.querySelector('#equal-sign');
 const deleteDigit = document.querySelector('#delete-digit');
 const clearEntry = document.querySelector('#clear-entry');
 const clearAll = document.querySelector('#clear-all');
+const numberSymbol = {
+  'num-1': '1',
+  'num-2': '2',
+  'num-3': '3',
+  'num-4': '4',
+  'num-5': '5',
+  'num-6': '6',
+  'num-7': '7',
+  'num-8': '8',
+  'num-9': '9',
+  'num-0': '0',
+}
+
+const calculatorOperator = {
+  'equal-sign': '=',
+  'oper-plus': '+',
+  'oper-minus': '-',
+  'oper-multiply': '*',
+  'oper-divide': '/',
+  'oper-sqrt': '√',
+}
+
+const addOperator = function(operatorID) {
+  // TODO: implement NEGATE - here or in calculator?
+  // if (Calculator.operator === '' && Calculator.numberOne.replace('-', '') === '') {
+  //   if (operatorID === 'oper-minus') {
+  //     Calculator.numberOne = '-';
+  //   }
+  // } else {
+    Calculator.addOperator(calculatorOperator[operatorID]);
+  // }
+}
 
 numbers.forEach(number => {
   number.addEventListener('click', () => {
-    calculator.addNumber(number.textContent);
+    Calculator.addNumber(numberSymbol[number.id]);
   });
 });
 
 operators.forEach(operator => {
   operator.addEventListener('click', () => {
-    if (calculator.operator === undefined) {
-      if (calculator.number1 === '' && operator.id === 'oper-minus') calculator.addNumber('-');
-      else calculator.addOperator(operator.id);
-    } else {
-      calculator.calculate();
-      calculator.addOperator(operator.id);
-    }
+    addOperator(operator.id);
   });
 });
 
 decimalSign.addEventListener('click', () => {
-  calculator.addDecimalSign();
+  Calculator.conditionalAddDecimalSign();
 });
 
 equalSign.addEventListener('click', () => {
-  calculator.calculate();
+  Calculator.calculate();
 });
 
 deleteDigit.addEventListener('click', () => {
-  calculator.deleteLastDigit();
+  Calculator.removeLastDigit();
 });
 
 clearEntry.addEventListener('click', () => {
-  calculator.reset();
+  Calculator.resetAll();
 });
 
 // TO-DO:
@@ -71,8 +97,5 @@ clearEntry.addEventListener('click', () => {
 
 
 document.addEventListener('keydown', e => {
-  // old
-  // keyCheck(e, keyBindings)
-  // new
   keyCheck(e)
 });
