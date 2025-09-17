@@ -1,14 +1,10 @@
 import DXCalc from '../../node_modules/dx-calc/dxCalc.js'
 
-
-//////////
-// Remove this later!!!
-window.DXCalc = DXCalc;
-//////////
-
 export default class Calculator {
   static #numberStack = [''];
   static #operatorStack = [];
+  static numberStackClone = Calculator.#numberStack;
+  static operatorStackClone = Calculator.#operatorStack;
 
   static #binaryOperations = {
     '+': (x, y) => DXCalc.number(x).add(y).value,
@@ -38,18 +34,54 @@ export default class Calculator {
     }
   }
 
+  static get #currentOperator() {
+    return Calculator.#operatorStack.at(-1);
+  }
+
+  static get #previousOperator() {
+   return Calculator.#operatorStack.at(-2);
+  }
+
+  static #isUnary(operator) {
+    return Calculator.#unaryOperations.hasOwnProperty(operator);
+  }
+
+  static #isBinary(operator) {
+    return Calculator.#binaryOperations.hasOwnProperty(operator);
+  }
+
   static addNumber(stringNumber) {
     const lastNumber = Calculator.#numberStack.pop();
     const newNumber = lastNumber + stringNumber;
     Calculator.#numberStack.push(newNumber);
   }
 
+  static #canAddOperator(operator) {
+    // need to check like state of operators and numbers
+    return true;
+  }
+
   static addOperator(operator) {
-    console.log(`All operators: ${Calculator.#operatorStack}`);
-    console.log(`All numbers: ${Calculator.#numberStack}`);
-    Calculator.#operatorStack.push(operator);
-    console.log(`Pushed new operator ${Calculator.#operatorStack.at(-1)}`);
-    Calculator.#makeCalculation();
+    if (Calculator.#canAddOperator(operator)) {
+      Calculator.#operatorStack.push(operator);
+    } else {
+      throw new Error(`Cannot add <${operator}> operator`);
+    }
+
+    if (Calculator.#isUnary(Calculator.#currentOperator)
+        && Calculator.#numberStack.at(-1) !== '') {
+      let tempCurrentOperator = Calculator.#operatorStack.pop();
+
+      Calculator.#operatorStack.push('*');
+      Calculator.#operatorStack.push(tempCurrentOperator);
+      Calculator.#breakNumber();
+
+      tempCurrentOperator = null;
+    }
+
+    if (Calculator.#previousOperator !== undefined) {
+      Calculator.#makeCalculation();
+    }
 
     if (!Calculator.#isUnary(Calculator.#currentOperator)) {
       Calculator.#breakNumber();
@@ -57,17 +89,9 @@ export default class Calculator {
   }
 
   static calculate() {
-    Calculator.#operatorStack.push('completely useless string to just make calculation believe there is something');
+    Calculator.#operatorStack.push('non-existant operator');
     Calculator.#makeCalculation();
     Calculator.#operatorStack.pop();
-  }
-
-  static get #currentOperator() {
-    return Calculator.#operatorStack.at(-1);
-  }
-
-  static get #previousOperator() {
-   return Calculator.#operatorStack.at(-2);
   }
 
   static #breakNumber() {
@@ -79,44 +103,32 @@ export default class Calculator {
     Calculator.#operatorStack.splice(-2, 1);
   }
 
-  static #getUnaryCalculation() {
+  static #unaryCalculate() {
     const poppedNumber = Calculator.#numberStack.pop();
     const calculation = Calculator.#unaryOperations[Calculator.#previousOperator];
-    return calculation(poppedNumber);
+    const result = calculation(poppedNumber);
+    Calculator.#pushCalculation(result);
   }
 
-  static #getBinaryCalculation () {
+  static #binaryCalculate () {
     const poppedNumbers = Calculator.#numberStack.splice(-2, 2);
     const calculation = Calculator.#binaryOperations[Calculator.#previousOperator];
-    return calculation(...poppedNumbers);
-  }
-
-  static #isUnary(operator) {
-    return Calculator.#unaryOperations.hasOwnProperty(operator);
-  }
-
-  static #isBinary(operator) {
-    return Calculator.#binaryOperations.hasOwnProperty(operator);
+    const result = calculation(...poppedNumbers);
+    Calculator.#pushCalculation(result);
   }
 
   static #makeCalculation() {
-    let result = false;
-
     if (Calculator.#isUnary(Calculator.#previousOperator)) {
-      result = Calculator.#getUnaryCalculation();
-      console.log('performed unary');
-    }
-
-    if (!Calculator.#isUnary(Calculator.#currentOperator)
+        Calculator.#unaryCalculate();
+    } else if (!Calculator.#isUnary(Calculator.#currentOperator)
         && Calculator.#isBinary(Calculator.#previousOperator)) {
-      result = Calculator.#getBinaryCalculation();
-      console.log('performed binary');
+        Calculator.#binaryCalculate();
+    } else {
+      throw new Error('jeez how the hell did you even write this oper');
     }
 
-    if (result !== false) {
-      Calculator.#pushCalculation(result);
+    if (Calculator.#operatorStack > 1 && !Calculator.#isUnary(Calculator.#currentOperator)) {
+      Calculator.#makeCalculation();
     }
-
-    console.log(`Result: ${Calculator.#numberStack.at(-1)}`)
   }
 }
