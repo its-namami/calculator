@@ -10,7 +10,7 @@
 // Idea: when a user presses '?' a helper window comes up with current
 // keybinds. Should also be accessible through an icon on the website.
 // Or navigation, whatever sounds more fun.
-import { keyBindings, keyCheck } from './keybindings.js';
+import Keybindings from './keybindings.js';
 // Add keyBindings global registry of used keys
 // And don't allow to add new values at low level - through using const
 import Calculator from './calculator.js';
@@ -53,15 +53,8 @@ const calculatorOperator = {
   'oper-sqrt': '√',
 }
 
-const addOperator = function(operatorID) {
-  // TODO: implement NEGATE - here or in calculator?
-  // if (Calculator.operator === '' && Calculator.numberOne.replace('-', '') === '') {
-  //   if (operatorID === 'oper-minus') {
-  //     Calculator.numberOne = '-';
-  //   }
-  // } else {
-    Calculator.addOperator(calculatorOperator[operatorID]);
-  // }
+const addOperator = function(operator) {
+    Calculator.addOperator(operator);
 }
 
 numbers.forEach(number => {
@@ -72,7 +65,7 @@ numbers.forEach(number => {
 
 operators.forEach(operator => {
   operator.addEventListener('click', () => {
-    addOperator(operator.id);
+    addOperator(calculatorOperator[operator.id]);
   });
 });
 
@@ -92,10 +85,12 @@ clearEntry.addEventListener('click', () => {
   Calculator.resetAll();
 });
 
-// TO-DO:
-// clearAll - once I got history
+const processKeyResponse = () => { // keymap to controller interface
+  // TO-DO: implement
+}
 
-
-document.addEventListener('keydown', e => {
-  keyCheck(e)
-});
+// TO-DO: fix keybindings module and implement interface
+// document.addEventListener('keydown', e => {
+//   const response = keyCheck(e);
+//   processKeyResponse(response);
+// });
