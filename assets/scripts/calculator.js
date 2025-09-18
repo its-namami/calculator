@@ -15,6 +15,7 @@ export default class Calculator {
 
   static #unaryOperations = {
     '√': x => DXCalc.number(x).sqrt().value,
+    'negate': x => DXCalc.number(x).multiply('-1'),
   }
 
   static resetAll() {
@@ -61,6 +62,13 @@ export default class Calculator {
   static #canAddOperator(newOperator) {
     const currentOperatorSameGroup = Calculator.#isUnary(Calculator.#currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(Calculator.#currentOperator) && Calculator.#isBinary(newOperator);
 
+    if (newOperator === '-'
+        && Calculator.#numberStack.length === 1
+        && Calculator.#numberStack[0] === ''
+        || Calculator.#numberStack[0] === '-') {
+      return 'negate';
+    }
+
     if (Calculator.#numberStack.at(-1) === ''
         && !Calculator.#isUnary(newOperator)) {
       if (currentOperatorSameGroup) {
@@ -82,6 +90,13 @@ export default class Calculator {
         break;
       case false:
         throw new Error(`Cannot add <${newOperator}> operator`);
+        break;
+      case 'negate':
+        if (Calculator.#numberStack.at(-1) !== '-') {
+          Calculator.#numberStack.pop();
+          Calculator.#numberStack.push('-');
+        }
+
         break;
       case 'sameGroup':
         sameGroup = true;
@@ -106,7 +121,8 @@ export default class Calculator {
     }
 
     if (!Calculator.#isUnary(Calculator.#currentOperator)
-        && !sameGroup) {
+        && !sameGroup
+        && Calculator.#numberStack[0] !== '-') {
       Calculator.#breakNumber();
     }
   }
