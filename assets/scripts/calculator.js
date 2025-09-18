@@ -1,10 +1,10 @@
 import DXCalc from '../../node_modules/dx-calc/dxCalc.js'
 
 export default class Calculator {
-  static #numberStack = [''];
-  static #operatorStack = [];
-  static numberStackClone = Calculator.#numberStack;
-  static operatorStackClone = Calculator.#operatorStack;
+  #numberStack = [''];
+  #operatorStack = [];
+  // numberStackClone = Calculator.#numberStack;
+  // operatorStackClone = Calculator.#operatorStack;
 
   static #binaryOperations = {
     '+': (x, y) => DXCalc.number(x).add(y).value,
@@ -18,31 +18,31 @@ export default class Calculator {
     'negate': x => DXCalc.number(x).multiply('-1'),
   }
 
-  static resetAll() {
-    Calculator.#numberStack = [''];
-    Calculator.#operatorStack = [];
+  resetAll() {
+    this.#numberStack = [''];
+    this.#operatorStack = [];
   }
 
-  static removeLastDigit() {
-    Calculator.#numberStack.push(Calculator.#numberStack.pop().slice(0, -1));
+  removeLastDigit() {
+    this.#numberStack.push(this.#numberStack.pop().slice(0, -1));
   }
 
   // cannot implement get result because UI needs to display creating
 
-  static conditionalAddDecimalSign() {
-    const hasDecimalSign = Calculator.#numberStack.at(-1).includes('.');
+  conditionalAddDecimalSign() {
+    const hasDecimalSign = this.#numberStack.at(-1).includes('.');
 
     if (!hasDecimalSign) {
-      Calculator.#numberStack.push(Calculator.#numberStack.pop().concat('.'));
+      this.#numberStack.push(this.#numberStack.pop().concat('.'));
     }
   }
 
-  static get #currentOperator() {
-    return Calculator.#operatorStack.at(-1);
+  get #currentOperator() {
+    return this.#operatorStack.at(-1);
   }
 
-  static get #previousOperator() {
-   return Calculator.#operatorStack.at(-2);
+  get #previousOperator() {
+   return this.#operatorStack.at(-2);
   }
 
   static #isUnary(operator) {
@@ -53,24 +53,23 @@ export default class Calculator {
     return Calculator.#binaryOperations.hasOwnProperty(operator);
   }
 
-  static addNumber(stringNumber) {
-    const lastNumber = Calculator.#numberStack.pop();
+  addNumber(stringNumber) {
+    const lastNumber = this.#numberStack.pop();
     const newNumber = lastNumber + stringNumber;
-    Calculator.#numberStack.push(newNumber);
+    this.#numberStack.push(newNumber);
   }
 
-  static #canAddOperator(newOperator) {
-    const currentOperatorSameGroup = Calculator.#isUnary(Calculator.#currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(Calculator.#currentOperator) && Calculator.#isBinary(newOperator);
+  #canAddOperator(newOperator) {
+    const currentOperatorSameGroup = Calculator.#isUnary(this.#currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(this.#currentOperator) && Calculator.#isBinary(newOperator);
 
     if (newOperator === '-'
-        && Calculator.#numberStack.length === 1
-        && Calculator.#numberStack[0] === ''
-        || Calculator.#numberStack[0] === '-') {
+        && this.#numberStack.length === 1
+        && this.#numberStack[0] === ''
+        || this.#numberStack[0] === '-') {
       return 'negate';
     }
 
-    if (Calculator.#numberStack.at(-1) === ''
-        && !Calculator.#isUnary(newOperator)) {
+    if (this.#numberStack.at(-1) === '') {
       if (currentOperatorSameGroup) {
         return 'sameGroup';
       } else {
@@ -81,91 +80,91 @@ export default class Calculator {
     return true;
   }
 
-  static addOperator(newOperator) {
+  addOperator(newOperator) {
     let sameGroup = false;
 
-    switch (Calculator.#canAddOperator(newOperator)) {
+    switch (this.#canAddOperator(newOperator)) {
       case true:
-        Calculator.#operatorStack.push(newOperator);
+        this.#operatorStack.push(newOperator);
         break;
       case false:
-        throw new Error(`Cannot add <${newOperator}> operator`);
+        // ignore, don't add / do anything
         break;
       case 'negate':
-        if (Calculator.#numberStack.at(-1) !== '-') {
-          Calculator.#numberStack.pop();
-          Calculator.#numberStack.push('-');
+        if (this.#numberStack.at(-1) !== '-') {
+          this.#numberStack.pop();
+          this.#numberStack.push('-');
         }
 
         break;
       case 'sameGroup':
         sameGroup = true;
-        Calculator.#operatorStack.pop();
-        Calculator.#operatorStack.push(newOperator);
+        this.#operatorStack.pop();
+        this.#operatorStack.push(newOperator);
         break;
     }
 
-    if (Calculator.#isUnary(Calculator.#currentOperator)
-        && Calculator.#numberStack.at(-1) !== '') {
-      let tempCurrentOperator = Calculator.#operatorStack.pop();
+    if (Calculator.#isUnary(this.#currentOperator)
+        && this.#numberStack.at(-1) !== '') {
+      let tempCurrentOperator = this.#operatorStack.pop();
 
-      Calculator.#operatorStack.push('*');
-      Calculator.#operatorStack.push(tempCurrentOperator);
-      Calculator.#breakNumber();
+      this.#operatorStack.push('*');
+      this.#operatorStack.push(tempCurrentOperator);
+      this.#breakNumber();
 
       tempCurrentOperator = null;
     }
 
-    if (Calculator.#previousOperator !== undefined) {
-      Calculator.#makeCalculation();
+    if (this.#previousOperator !== undefined) {
+      this.#makeCalculation();
     }
 
-    if (!Calculator.#isUnary(Calculator.#currentOperator)
+    if (!Calculator.#isUnary(this.#currentOperator)
         && !sameGroup
-        && Calculator.#numberStack[0] !== '-') {
-      Calculator.#breakNumber();
+        && this.#numberStack[0] !== '-') {
+      this.#breakNumber();
     }
   }
 
-  static calculate() {
-    Calculator.#operatorStack.push('non-existant operator');
-    Calculator.#makeCalculation();
-    Calculator.#operatorStack.pop();
+  calculate() {
+    this.#operatorStack.push('non-existant operator');
+    this.#makeCalculation();
+    this.#operatorStack.pop();
   }
 
-  static #breakNumber() {
-    Calculator.#numberStack.push('');
+  #breakNumber() {
+    this.#numberStack.push('');
   }
 
-  static #pushCalculation(result) {
-    Calculator.#numberStack.push(result);
-    Calculator.#operatorStack.splice(-2, 1);
+  #pushCalculation(result) {
+    this.#numberStack.push(result);
+    this.#operatorStack.splice(-2, 1);
   }
 
-  static #unaryCalculate(operator) {
-    const poppedNumber = Calculator.#numberStack.pop();
+  #unaryCalculate(operator) {
+    const poppedNumber = this.#numberStack.pop();
     const calculation = Calculator.#unaryOperations[operator];
     const result = calculation(poppedNumber);
-    Calculator.#pushCalculation(result);
+    this.#pushCalculation(result);
   }
 
-  static #binaryCalculate (operator) {
-    const poppedNumbers = Calculator.#numberStack.splice(-2, 2);
+  #binaryCalculate (operator) {
+    const poppedNumbers = this.#numberStack.splice(-2, 2);
     const calculation = Calculator.#binaryOperations[operator];
     const result = calculation(...poppedNumbers);
-    Calculator.#pushCalculation(result);
+    this.#pushCalculation(result);
   }
 
-  static #makeCalculation() {
-    if (Calculator.#isUnary(Calculator.#previousOperator)) {
-        Calculator.#unaryCalculate(Calculator.#previousOperator);
-    } else if (!Calculator.#isUnary(Calculator.#currentOperator)
-        && Calculator.#isBinary(Calculator.#previousOperator)) {
-        Calculator.#binaryCalculate(Calculator.#previousOperator);
+  #makeCalculation() {
+    if (Calculator.#isUnary(this.#previousOperator)) {
+        this.#unaryCalculate(this.#previousOperator);
+    } else if (!Calculator.#isUnary(this.#currentOperator)
+        && Calculator.#isBinary(this.#previousOperator)) {
+        this.#binaryCalculate(this.#previousOperator);
     }
 
-    if (Calculator.#operatorStack.length > 1 && !Calculator.#isUnary(Calculator.#currentOperator)) {
-      Calculator.#makeCalculation();
+    if (this.#operatorStack.length > 1 && !Calculator.#isUnary(this.#currentOperator)) {
+      this.#makeCalculation();
     }
   }
 }

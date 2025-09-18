@@ -21,8 +21,9 @@ import regionalSymbols from './symbols.js';
 // This should be done by having "verbose" and "normal" mode
 // and obviously auto insert the regional symbols
 //////////
+const calculator = new Calculator();
 // Remove this later!!!
-window.Calculator = Calculator;
+window.calculator = calculator;
 //////////
 const numbers = document.querySelectorAll('.number');
 const operators = document.querySelectorAll('.operator');
@@ -54,12 +55,12 @@ const calculatorOperator = {
 }
 
 const addOperator = function(operator) {
-    Calculator.addOperator(operator);
+    calculator.addOperator(operator);
 }
 
 numbers.forEach(number => {
   number.addEventListener('click', () => {
-    Calculator.addNumber(numberSymbol[number.id]);
+    calculator.addNumber(numberSymbol[number.id]);
   });
 });
 
@@ -70,19 +71,19 @@ operators.forEach(operator => {
 });
 
 decimalSign.addEventListener('click', () => {
-  Calculator.conditionalAddDecimalSign();
+  calculator.conditionalAddDecimalSign();
 });
 
 equalSign.addEventListener('click', () => {
-  Calculator.calculate();
+  calculator.calculate();
 });
 
 deleteDigit.addEventListener('click', () => {
-  Calculator.removeLastDigit();
+  calculator.removeLastDigit();
 });
 
 clearEntry.addEventListener('click', () => {
-  Calculator.resetAll();
+  calculator.resetAll();
 });
 
 const processKeyResponse = () => { // keymap to controller interface
