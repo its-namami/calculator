@@ -46,3 +46,8 @@
   background-color: #D43775;
   color: white;
 }
+
+#results-wrap {
+  display: flex;
+  justify-content: space-between;
+}
