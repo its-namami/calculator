@@ -20,9 +20,12 @@ import regionalSymbols from './symbols.js';
 // I want to convert numbers to real words 
 // This should be done by having "verbose" and "normal" mode
 // and obviously auto insert the regional symbols
+import UI_Class from './ui.js';
 //////////
+const UI = new UI_Class(...(Array.from(document.querySelector('#results-wrap').children)));
 const calculator = new Calculator();
 // Remove this later!!!
+window.ui = UI;
 window.calculator = calculator;
 //////////
 const numbers = document.querySelectorAll('.number');
@@ -32,7 +35,7 @@ const equalSign = document.querySelector('#equal-sign');
 const deleteDigit = document.querySelector('#delete-digit');
 const clearEntry = document.querySelector('#clear-entry');
 const clearAll = document.querySelector('#clear-all');
-const numberSymbol = {
+const getNumberFromID = {
   'num-1': '1',
   'num-2': '2',
   'num-3': '3',
@@ -45,7 +48,7 @@ const numberSymbol = {
   'num-0': '0',
 }
 
-const calculatorOperator = {
+const getOperatorFromID = {
   'equal-sign': '=',
   'oper-plus': '+',
   'oper-minus': '-',
@@ -60,13 +63,15 @@ const addOperator = function(operator) {
 
 numbers.forEach(number => {
   number.addEventListener('click', () => {
-    calculator.addNumber(numberSymbol[number.id]);
+    calculator.addNumber(getNumberFromID[number.id]);
+    UI.updateNumber(calculator.currentNumber);
   });
 });
 
 operators.forEach(operator => {
   operator.addEventListener('click', () => {
-    addOperator(calculatorOperator[operator.id]);
+    addOperator(getOperatorFromID[operator.id]);
+    UI.updateOperator(calculator.currentOperator);
   });
 });
 
@@ -76,6 +81,8 @@ decimalSign.addEventListener('click', () => {
 
 equalSign.addEventListener('click', () => {
   calculator.calculate();
+  UI.updateNumber(calculator.currentNumber);
+  UI.updateOperator(calculator.currentOperator);
 });
 
 deleteDigit.addEventListener('click', () => {

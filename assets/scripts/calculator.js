@@ -30,15 +30,19 @@ export default class Calculator {
   // cannot implement get result because UI needs to display creating
 
   conditionalAddDecimalSign() {
-    const hasDecimalSign = this.#numberStack.at(-1).includes('.');
+    const hasDecimalSign = this.currentNumber.includes('.');
 
     if (!hasDecimalSign) {
       this.#numberStack.push(this.#numberStack.pop().concat('.'));
     }
   }
 
-  get #currentOperator() {
+  get currentOperator() {
     return this.#operatorStack.at(-1);
+  }
+
+  get currentNumber() {
+    return this.#numberStack.at(-1);
   }
 
   get #previousOperator() {
@@ -60,7 +64,7 @@ export default class Calculator {
   }
 
   #canAddOperator(newOperator) {
-    const currentOperatorSameGroup = Calculator.#isUnary(this.#currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(this.#currentOperator) && Calculator.#isBinary(newOperator);
+    const currentOperatorSameGroup = Calculator.#isUnary(this.currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(this.currentOperator) && Calculator.#isBinary(newOperator);
 
     if (newOperator === '-'
         && this.#numberStack.length === 1
@@ -69,7 +73,7 @@ export default class Calculator {
       return 'negate';
     }
 
-    if (this.#numberStack.at(-1) === '') {
+    if (this.currentNumber === '') {
       if (currentOperatorSameGroup) {
         return 'sameGroup';
       } else {
@@ -91,7 +95,7 @@ export default class Calculator {
         // ignore, don't add / do anything
         break;
       case 'negate':
-        if (this.#numberStack.at(-1) !== '-') {
+        if (this.currentNumber !== '-') {
           this.#numberStack.pop();
           this.#numberStack.push('-');
         }
@@ -104,8 +108,8 @@ export default class Calculator {
         break;
     }
 
-    if (Calculator.#isUnary(this.#currentOperator)
-        && this.#numberStack.at(-1) !== '') {
+    if (Calculator.#isUnary(this.currentOperator)
+        && this.currentNumber !== '') {
       let tempCurrentOperator = this.#operatorStack.pop();
 
       this.#operatorStack.push('*');
@@ -119,7 +123,7 @@ export default class Calculator {
       this.#makeCalculation();
     }
 
-    if (!Calculator.#isUnary(this.#currentOperator)
+    if (!Calculator.#isUnary(this.currentOperator)
         && !sameGroup
         && this.#numberStack[0] !== '-') {
       this.#breakNumber();
@@ -158,12 +162,12 @@ export default class Calculator {
   #makeCalculation() {
     if (Calculator.#isUnary(this.#previousOperator)) {
         this.#unaryCalculate(this.#previousOperator);
-    } else if (!Calculator.#isUnary(this.#currentOperator)
+    } else if (!Calculator.#isUnary(this.currentOperator)
         && Calculator.#isBinary(this.#previousOperator)) {
         this.#binaryCalculate(this.#previousOperator);
     }
 
-    if (this.#operatorStack.length > 1 && !Calculator.#isUnary(this.#currentOperator)) {
+    if (this.#operatorStack.length > 1 && !Calculator.#isUnary(this.currentOperator)) {
       this.#makeCalculation();
     }
   }
