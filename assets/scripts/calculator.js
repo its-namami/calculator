@@ -23,8 +23,16 @@ export default class Calculator {
     this.#operatorStack = [];
   }
 
-  removeLastDigit() {
-    this.#numberStack.push(this.#numberStack.pop().slice(0, -1));
+  deleteCharacter() {
+    if (this.currentNumber !== '') {
+      this.#numberStack.push(this.#numberStack.pop().slice(0, -1));
+    } else if (this.currentOperator !== undefined) {
+      this.#operatorStack.pop();
+
+      if (this.previousNumber !== undefined) {
+        this.#numberStack.pop();
+      }
+    }
   }
 
   // cannot implement get result because UI needs to display creating

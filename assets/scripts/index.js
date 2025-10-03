@@ -78,6 +78,7 @@ operators.forEach(operator => {
 
 decimalSign.addEventListener('click', () => {
   calculator.conditionalAddDecimalSign();
+    UI.updateNumber(calculator.previousNumber ?? '');
 });
 
 equalSign.addEventListener('click', () => {
@@ -87,11 +88,15 @@ equalSign.addEventListener('click', () => {
 });
 
 deleteDigit.addEventListener('click', () => {
-  calculator.removeLastDigit();
+  calculator.deleteCharacter();
+  UI.updateNumber(calculator.currentNumber);
+  UI.updateOperator(calculator.currentOperator);
 });
 
 clearEntry.addEventListener('click', () => {
   calculator.resetAll();
+  UI.updateNumber('<Welcome>');
+  UI.updateOperator(calculator.currentOperator);
 });
 
 const processKeyResponse = () => { // keymap to controller interface
