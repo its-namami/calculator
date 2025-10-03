@@ -71,7 +71,8 @@ numbers.forEach(number => {
 operators.forEach(operator => {
   operator.addEventListener('click', () => {
     addOperator(getOperatorFromID[operator.id]);
-    UI.updateOperator(calculator.currentOperator);
+    UI.updateNumber(calculator.previousNumber ?? '');
+    UI.updateOperator(calculator.currentOperator ?? '');
   });
 });
 

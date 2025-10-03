@@ -45,6 +45,10 @@ export default class Calculator {
     return this.#numberStack.at(-1);
   }
 
+  get previousNumber() {
+    return this.#numberStack.at(-2);
+  }
+
   get #previousOperator() {
    return this.#operatorStack.at(-2);
   }
