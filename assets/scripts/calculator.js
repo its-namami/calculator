@@ -1,21 +1,30 @@
-import DXCalc from '../../node_modules/dx-calc/dxCalc.js'
+import MathEngine from '../../node_modules/dx-calc/dxCalc.js'
 
 export default class Calculator {
   #numberStack = [''];
   #operatorStack = [];
+  // Possibly show in frontend as "whole calculation"
   // numberStackClone = Calculator.#numberStack;
   // operatorStackClone = Calculator.#operatorStack;
 
   static #binaryOperations = {
-    '+': (x, y) => DXCalc.number(x).add(y).value,
-    '-': (x, y) => DXCalc.number(x).subtract(y).value,
-    '*': (x, y) => DXCalc.number(x).multiply(y).value,
-    '/': (x, y) => DXCalc.number(x).divide(y).value,
+    '+': (x, y) => MathEngine.number(x).add(y).value,
+    '-': (x, y) => MathEngine.number(x).subtract(y).value,
+    '*': (x, y) => MathEngine.number(x).multiply(y).value,
+    '/': (x, y) => MathEngine.number(x).divide(y).value,
   }
 
   static #unaryOperations = {
-    '√': x => DXCalc.number(x).sqrt().value,
-    'negate': x => DXCalc.number(x).multiply('-1'),
+    '√': x => MathEngine.number(x).sqrt().value,
+    'negate': x => MathEngine.number(x).multiply('-1'),
+  }
+
+  static #isUnary(operator) {
+    return Calculator.#unaryOperations.hasOwnProperty(operator);
+  }
+
+  static #isBinary(operator) {
+    return Calculator.#binaryOperations.hasOwnProperty(operator);
   }
 
   resetAll() {
@@ -37,14 +46,6 @@ export default class Calculator {
 
   // cannot implement get result because UI needs to display creating
 
-  conditionalAddDecimalSign() {
-    const hasDecimalSign = this.currentNumber.includes('.');
-
-    if (!hasDecimalSign) {
-      this.#numberStack.push(this.#numberStack.pop().concat('.'));
-    }
-  }
-
   get currentOperator() {
     return this.#operatorStack.at(-1);
   }
@@ -61,39 +62,16 @@ export default class Calculator {
    return this.#operatorStack.at(-2);
   }
 
-  static #isUnary(operator) {
-    return Calculator.#unaryOperations.hasOwnProperty(operator);
-  }
-
-  static #isBinary(operator) {
-    return Calculator.#binaryOperations.hasOwnProperty(operator);
+  conditionalAddDecimalSign() {
+    if (!this.currentNumber.includes('.')) {
+      this.#numberStack.push(this.#numberStack.pop().concat('.'));
+    }
   }
 
   addNumber(stringNumber) {
     const lastNumber = this.#numberStack.pop();
     const newNumber = lastNumber + stringNumber;
     this.#numberStack.push(newNumber);
-  }
-
-  #canAddOperator(newOperator) {
-    const currentOperatorSameGroup = Calculator.#isUnary(this.currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(this.currentOperator) && Calculator.#isBinary(newOperator);
-
-    if (newOperator === '-'
-        && this.#numberStack.length === 1
-        && this.#numberStack[0] === ''
-        || this.#numberStack[0] === '-') {
-      return 'negate';
-    }
-
-    if (this.currentNumber === '') {
-      if (currentOperatorSameGroup) {
-        return 'sameGroup';
-      } else {
-        return false;
-      }
-    }
-
-    return true;
   }
 
   addOperator(newOperator) {
@@ -146,6 +124,27 @@ export default class Calculator {
     this.#operatorStack.push('non-existant operator');
     this.#makeCalculation();
     this.#operatorStack.pop();
+  }
+
+  #canAddOperator(newOperator) {
+    const currentOperatorSameGroup = Calculator.#isUnary(this.currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(this.currentOperator) && Calculator.#isBinary(newOperator);
+
+    if (newOperator === '-'
+        && this.#numberStack.length === 1
+        && this.#numberStack[0] === ''
+        || this.#numberStack[0] === '-') {
+      return 'negate';
+    }
+
+    if (this.currentNumber === '') {
+      if (currentOperatorSameGroup) {
+        return 'sameGroup';
+      } else {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   #breakNumber() {
