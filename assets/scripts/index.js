@@ -16,7 +16,7 @@ import Keybindings from './keybindings.js';
 import Calculator from './calculator.js';
 // Separate the UI-Displaying logic from the actual calculator
 // Maybe even dynamically create new calculator directly in JS
-import regionalSymbols from './symbols.js';
+import RegionalSymbols from './symbols.js';
 // I want to convert numbers to real words 
 // This should be done by having "verbose" and "normal" mode
 // and obviously auto insert the regional symbols
@@ -28,8 +28,8 @@ const calculator = new Calculator();
 window.ui = UI;
 window.calculator = calculator;
 //////////
-const numbers = document.querySelectorAll('.number');
-const operators = document.querySelectorAll('.operator');
+const numbers = document.querySelectorAll('[id^="num-"].number');
+const operators = document.querySelectorAll('[id^="oper-"].operator');
 const decimalSign = document.querySelector('#decimal-sign');
 const equalSign = document.querySelector('#equal-sign');
 const deleteDigit = document.querySelector('#delete-digit');
@@ -46,6 +46,7 @@ const getNumberFromID = {
   'num-8': '8',
   'num-9': '9',
   'num-0': '0',
+  'num-scientific-e': 'e',
 }
 
 const getOperatorFromID = {
@@ -55,6 +56,11 @@ const getOperatorFromID = {
   'oper-multiply': '*',
   'oper-divide': '/',
   'oper-sqrt': '√',
+}
+
+const stdUpdateUI = () => {
+    UI.updateNumber(calculator.currentNumber ?? '');
+    UI.updateOperator(calculator.currentOperator ?? '');
 }
 
 const addOperator = function(operator) {
@@ -71,32 +77,29 @@ numbers.forEach(number => {
 operators.forEach(operator => {
   operator.addEventListener('click', () => {
     addOperator(getOperatorFromID[operator.id]);
-    UI.updateNumber(calculator.previousNumber ?? '');
-    UI.updateOperator(calculator.currentOperator ?? '');
+    UI.updateNumber(calculator.previousNumber);
+    UI.updateOperator(calculator.currentOperator);
   });
 });
 
 decimalSign.addEventListener('click', () => {
   calculator.conditionalAddDecimalSign();
-    UI.updateNumber(calculator.previousNumber ?? '');
+  UI.updateNumber(calculator.currentNumber);
 });
 
 equalSign.addEventListener('click', () => {
   calculator.calculate();
-  UI.updateNumber(calculator.currentNumber);
-  UI.updateOperator(calculator.currentOperator);
+  stdUpdateUI()
 });
 
 deleteDigit.addEventListener('click', () => {
   calculator.deleteCharacter();
-  UI.updateNumber(calculator.currentNumber);
-  UI.updateOperator(calculator.currentOperator);
+  stdUpdateUI()
 });
 
 clearEntry.addEventListener('click', () => {
   calculator.resetAll();
-  UI.updateNumber('<Welcome>');
-  UI.updateOperator(calculator.currentOperator);
+  stdUpdateUI()
 });
 
 const processKeyResponse = () => { // keymap to controller interface

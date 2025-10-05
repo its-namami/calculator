@@ -25,19 +25,15 @@
 
 .number,
 .special,
-.operator,
-.visually-like-number,
-.visually-like-operator {
+.operator {
   border: 1px solid black;
 }
 
-.number,
-.visually-like-number {
+.number {
   background-color: white;
 }
 
-.operator,
-.visually-like-operator {
+.operator {
   background-color: black;
   color: white;
 }
