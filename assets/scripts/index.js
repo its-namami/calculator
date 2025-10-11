@@ -1,41 +1,19 @@
-// To-Do: add BigInt support (or at least do something with scientific notation!)
-// Current Problem: when a number gets large enough, and a user tries to add
-// Number to this scientific notation, it gets broken (2+e10 and user adds 2
-// -> becomes 2+e102)
-///////////
-// Idea: Make vim keyboard with changable layout by using A or I as input
-// It should look like normal calculator tile but with focus on current
-// tile you moved with H, J, K or L. Maybe also add arrow keys.
-///////////
-// Idea: when a user presses '?' a helper window comes up with current
-// keybinds. Should also be accessible through an icon on the website.
-// Or navigation, whatever sounds more fun.
-import Keybindings from './keybindings.js';
-// Add keyBindings global registry of used keys
-// And don't allow to add new values at low level - through using const
+import keybindings from './keybindings.js';
 import Calculator from './calculator.js';
-// Separate the UI-Displaying logic from the actual calculator
-// Maybe even dynamically create new calculator directly in JS
 import RegionalSymbols from './symbols.js';
-// I want to convert numbers to real words 
-// This should be done by having "verbose" and "normal" mode
-// and obviously auto insert the regional symbols
 import UI_Class from './ui.js';
-//////////
-const UI = new UI_Class(...(Array.from(document.querySelector('#results-wrap').children)));
+
 const calculator = new Calculator();
-// Remove this later!!!
-window.ui = UI;
-window.calculator = calculator;
-//////////
-const numbers = document.querySelectorAll('[id^="num-"].number');
-const operators = document.querySelectorAll('[id^="oper-"].operator');
+const UI = new UI_Class(...(Array.from(document.querySelector('#results-wrap').children)));
+
+const numberElements = document.querySelectorAll('[id^="num-"].number');
+const operatorElements = document.querySelectorAll('[id^="oper-"].operator');
 const decimalSign = document.querySelector('#decimal-sign');
 const equalSign = document.querySelector('#equal-sign');
 const deleteDigit = document.querySelector('#delete-digit');
 const clearEntry = document.querySelector('#clear-entry');
-const clearAll = document.querySelector('#clear-all');
-const getNumberFromID = {
+
+const numberIdToDigit = {
   'num-1': '1',
   'num-2': '2',
   'num-3': '3',
@@ -46,10 +24,9 @@ const getNumberFromID = {
   'num-8': '8',
   'num-9': '9',
   'num-0': '0',
-  'num-scientific-e': 'e',
 }
 
-const getOperatorFromID = {
+const operatorIdToSign = {
   'equal-sign': '=',
   'oper-plus': '+',
   'oper-minus': '-',
@@ -58,56 +35,105 @@ const getOperatorFromID = {
   'oper-sqrt': '√',
 }
 
+const digits = Object.values(numberIdToDigit);
+const operators = Object.values(operatorIdToSign);
+
 const stdUpdateUI = () => {
     UI.updateNumber(calculator.currentNumber ?? '');
     UI.updateOperator(calculator.currentOperator ?? '');
 }
 
-const addOperator = function(operator) {
-    calculator.addOperator(operator);
+const addUpdateNumber = number => {
+    calculator.addNumber(number);
+    UI.updateNumber(calculator.currentNumber);
 }
 
-numbers.forEach(number => {
+const addUpdateOperator = operator => {
+    calculator.addOperator(operator);
+    UI.updateNumber(calculator.previousNumber);
+    UI.updateOperator(calculator.currentOperator);
+}
+
+const addUpdateDecimal = () => {
+  calculator.conditionalAddDecimalSign();
+  UI.updateNumber(calculator.currentNumber);
+}
+
+const addUpdateEqual = () => {
+  calculator.calculate();
+  stdUpdateUI()
+}
+
+const addUpdateDelete = () => {
+  calculator.deleteCharacter();
+  stdUpdateUI()
+}
+
+const addUpdateClear = () => {
+  calculator.resetAll();
+  stdUpdateUI()
+}
+
+numberElements.forEach(number => {
   number.addEventListener('click', () => {
-    calculator.addNumber(getNumberFromID[number.id]);
-    UI.updateNumber(calculator.currentNumber);
+    addUpdateNumber(numberIdToDigit[number.id]);
   });
 });
 
-operators.forEach(operator => {
+operatorElements.forEach(operator => {
   operator.addEventListener('click', () => {
-    addOperator(getOperatorFromID[operator.id]);
-    UI.updateNumber(calculator.previousNumber);
-    UI.updateOperator(calculator.currentOperator);
+    addUpdateOperator(operatorIdToSign[operator.id]);
   });
 });
 
 decimalSign.addEventListener('click', () => {
-  calculator.conditionalAddDecimalSign();
-  UI.updateNumber(calculator.currentNumber);
+  addUpdateDecimal();
 });
 
 equalSign.addEventListener('click', () => {
-  calculator.calculate();
-  stdUpdateUI()
+  addUpdateEqual();
 });
 
 deleteDigit.addEventListener('click', () => {
-  calculator.deleteCharacter();
-  stdUpdateUI()
+  addUpdateDelete();
 });
 
 clearEntry.addEventListener('click', () => {
-  calculator.resetAll();
-  stdUpdateUI()
+  addUpdateClear();
 });
 
-const processKeyResponse = () => { // keymap to controller interface
-  // TO-DO: implement
+const handleUniqueResponse = response => {
+  switch (response) {
+    case '=':
+      addUpdateEqual();
+      break;
+    case '.':
+      addUpdateDecimal();
+      break;
+    case 'delete':
+      addUpdateDelete();
+      break;
+    case 'clear':
+      addUpdateClear();
+      break;
+    default:
+      throw new Error(`The ${response} is not a handled case!`);
+      break;
+  }
 }
 
-// TO-DO: fix keybindings module and implement interface
-// document.addEventListener('keydown', e => {
-//   const response = keyCheck(e);
-//   processKeyResponse(response);
-// });
+const processKey = response => {
+  if (digits.includes(response)) {
+    addUpdateNumber(response);
+  } else if (operators.includes(response)) {
+    addUpdateOperator(response);
+  } else {
+    handleUniqueResponse(response);
+  }
+}
+
+document.addEventListener('keydown', e => {
+  const keyResponse = keybindings.keyProcessor(e.key, e.shiftKey, e.ctrlKey);
+
+  keyResponse !== undefined && processKey(keyResponse);
+});
