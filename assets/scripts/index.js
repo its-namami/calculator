@@ -12,6 +12,7 @@ const decimalSign = document.querySelector('#decimal-sign');
 const equalSign = document.querySelector('#equal-sign');
 const deleteDigit = document.querySelector('#delete-digit');
 const clearEntry = document.querySelector('#clear-entry');
+const clearAll = document.querySelector('#clear-all');
 
 const numberIdToDigit = {
   'num-1': '1',
@@ -99,6 +100,10 @@ deleteDigit.addEventListener('click', () => {
 });
 
 clearEntry.addEventListener('click', () => {
+  addUpdateClear();
+});
+
+clearAll.addEventListener('click', () => {
   addUpdateClear();
 });
 
