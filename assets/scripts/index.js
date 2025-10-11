@@ -1,10 +1,10 @@
 import keybindings from './keybindings.js';
 import Calculator from './calculator.js';
 import RegionalSymbols from './symbols.js';
-import UI_Class from './ui.js';
+import UiUpdater from './uiUpdater.js';
 
 const calculator = new Calculator();
-const UI = new UI_Class(...(Array.from(document.querySelector('#results-wrap').children)));
+const UI = new UiUpdater(...(Array.from(document.querySelector('#results-wrap').children)));
 
 const numberElements = document.querySelectorAll('[id^="num-"].number');
 const operatorElements = document.querySelectorAll('[id^="oper-"].operator');

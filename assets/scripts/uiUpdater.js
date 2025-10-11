@@ -1,4 +1,4 @@
-export default class UI {
+export default class UiUpdater {
   #numberElement;
   #operatorElement;
 
