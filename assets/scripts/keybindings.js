@@ -16,7 +16,7 @@ export default class Keybindings {
     [[['/'], ['/', 'Shift'], ['d', 'Shift']], '/'],
     [[['+'], ['+', 'Shift'], ['p', 'Shift']], '+'],
     [[['*'], ['*', 'Shift'], ['t', 'Shift']], '*'],
-    [[['='], ['e', 'Shift'], ['Enter']], '='],
+    [[['='], ['e', 'Shift'], ['enter']], '='],
     [[['Backspace'], ['x', 'Shift']], 'delete'],
     [[['Escape'], ['c', 'Control']], 'clear'],
   ]);
