@@ -17,8 +17,8 @@ export default class Keybindings {
     [[['+'], ['+', 'shift'], ['p', 'shift']], '+'],
     [[['*'], ['*', 'shift'], ['t', 'shift']], '*'],
     [[['='], ['e', 'shift'], ['enter']], '='],
-    [[['backspace'], ['x', 'shift']], 'delete'],
-    [[['escape'], ['c', 'Control']], 'clear'],
+    [[['backspace'], ['x']], 'delete'],
+    [[['escape'], ['c', 'control']], 'clear'],
   ]);
 
   static keyProcessor(key, shift = false, control = false) {
@@ -34,5 +34,9 @@ export default class Keybindings {
 	}
       }
     }
+  }
+
+  static getKeyMap() {
+    return Keybindings.#keys;
   }
 }

@@ -1,18 +1,17 @@
-import keybindings from './keybindings.js';
+import keys from './keybindings.js';
 import Calculator from './calculator.js';
-import RegionalSymbols from './symbols.js';
 import UiUpdater from './uiUpdater.js';
+import doc from './lazyDocument.js';
 
 const calculator = new Calculator();
-const UI = new UiUpdater(document.querySelector('#number-result'), document.querySelector('#operator-mode'));
+const UI = new UiUpdater(doc.node('#number-display'), doc.node('#operator-display'), keys.getKeyMap());
 
-const numberElements = document.querySelectorAll('[id^="num-"].number');
-const operatorElements = document.querySelectorAll('[id^="oper-"].operator');
-const decimalSign = document.querySelector('#decimal-sign');
-const equalSign = document.querySelector('#equal-sign');
-const deleteDigit = document.querySelector('#delete-digit');
-const clearEntry = document.querySelector('#clear-entry');
-const clearAll = document.querySelector('#clear-all');
+const numberElements = doc.nodes('[id^="num-"].number');
+const operatorElements = doc.nodes('[id^="oper-"].operator');
+const decimalSign = doc.node('#decimal-sign');
+const equalSign = doc.node('#equal-sign');
+const deleteDigit = doc.node('#delete-digit');
+const clearEntry = doc.node('#clear-entry');
 
 const numberIdToDigit = {
   'num-1': '1',
@@ -103,10 +102,6 @@ clearEntry.addEventListener('click', () => {
   addUpdateClear();
 });
 
-clearAll.addEventListener('click', () => {
-  addUpdateClear();
-});
-
 const handleUniqueResponse = response => {
   switch (response) {
     case '=':
@@ -137,8 +132,8 @@ const processKey = response => {
   }
 }
 
-document.addEventListener('keydown', e => {
-  const keyResponse = keybindings.keyProcessor(e.key, e.shiftKey, e.ctrlKey);
+doc.event('keydown', e => {
+  const keyResponse = keys.keyProcessor(e.key, e.shiftKey, e.ctrlKey);
 
   keyResponse !== undefined && processKey(keyResponse);
 });

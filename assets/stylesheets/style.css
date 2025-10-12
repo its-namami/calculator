@@ -4,11 +4,10 @@
     url('../fonts/SpeedyRegular-7BLoE.ttf');
 }
 
-:root,
-:root *,
-:root::before,
-:root::after {
-  font-family: 'Speedy Font', sans-serif;
+@font-face {
+  font-family: 'Nerd Font';
+  src:
+    url('../fonts/NerdFontsSymbolsOnly/SymbolsNerdFont-Regular.ttf');
 }
 
 #calculator {
@@ -19,35 +18,99 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-#calculator #buttons {
-  margin-top: .5rem;
+  display: flex;
+  flex-flow: column nowrap;
   user-select: none;
   -webkit-user-select: none;
-}
 
-.number,
-.special,
-.operator {
-  border: 1px solid black;
-}
+  & * {
+    font-family: 'Speedy Font', sans-serif;
 
-.number {
-  background-color: white;
-}
+    &.nerd-font-container * {
+      font-family: 'Nerd Font', sans-serif;
+    }
+  }
 
-.operator {
-  background-color: black;
-  color: white;
-}
+  & > #visor {
+    display: flex;
+    justify-content: space-between;
+    flex: 0.3;
+    align-items: center;
+    font-size: 3rem;
+    padding: 0 2rem;
 
-.special {
-  background-color: #D43775;
-  color: white;
-}
+    & > #number-display {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+  }
 
-#results-wrap {
-  display: flex;
-  justify-content: space-between;
+  & > #buttons {
+    flex: 1;
+    display: grid;
+    grid-template: repeat(5, 1fr) / repeat(4, 1fr);
+    margin-top: .5rem;
+
+    & button:is(.number, .operator, .special) {
+      border: 1px solid darkgray;
+      font-size: 1.7rem;
+    }
+
+    & button.number {
+      background-color: white;
+
+      &:hover { background-color: #d0e8ff }
+    }
+
+    & button.operator {
+      background-color: black;
+      color: white;
+
+      &:hover { background-color: slategray }
+    }
+
+    & button.special {
+      background-color: #D43775;
+      color: white;
+
+      &:hover { background-color: #C427AA }
+    }
+
+    & #positions {
+      display: grid;
+      grid-template: repeat(2, 1fr) / repeat(2, 1fr);
+
+      /* & > .flex-row-wrapper > button.position {  } */
+    }
+
+    & > #main-pad {
+      display: grid;
+      grid-area: 1 /  1 /span 4 / span 3;
+      grid-template: repeat(4, 1fr) / repeat(3, 1fr);
+
+      & > button.special {
+        order: 1;
+      }
+    }
+
+    & > #side-pad {
+      display: flex;
+      grid-area: 1 /  -2 /-1 / -1;
+      flex-flow: column nowrap;
+
+      & > * {
+        flex: 1;
+      }
+    }
+
+    & > #bottom-pad {
+      display: grid;
+      grid-area: -2 /  1 /-1 / span 3;
+      grid-template-columns: repeat(3, 1fr);
+
+      & > * {
+        flex: 1;
+      }
+    }
+  }
 }
