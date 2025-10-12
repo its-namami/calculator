@@ -25,10 +25,10 @@ export default class Keybindings {
     for (const [keybindings, result] of Keybindings.#keys) {
       for (const keybinding of keybindings) {
 	if (keybinding.includes(key.toLowerCase())
-	    && key !== 'shift'
-	    && key !== 'control'
-	    && shift === keybinding.includes('Shift')
-	    && control === keybinding.includes('Control')
+	    && key !== 'Shift'
+	    && key !== 'Control'
+	    && shift === keybinding.includes('shift')
+	    && control === keybinding.includes('control')
 	) {
 	  return result;
 	}
