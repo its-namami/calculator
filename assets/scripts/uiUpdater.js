@@ -14,6 +14,6 @@ export default class UiUpdater {
   }
 
   updateOperator(operator) {
-    this.#operatorElement.textContent = operator;
+    this.#operatorElement.textContent = operator === '/' ? '÷' : operator;
   }
 }

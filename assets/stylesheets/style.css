@@ -12,7 +12,8 @@
 
 #calculator {
   position: absolute;
-  border: 1px solid red;
+  outline: 1px solid red;
+  outline-offset: -1px;
   height: 80vh; 
   aspect-ratio: 3 / 4; 
   top: 50%;
@@ -39,9 +40,19 @@
     font-size: 3rem;
     padding: 0 2rem;
 
+    & > #operator-display {
+      flex: 1;
+    }
+
     & > #number-display {
+      flex: 5;
       user-select: text;
       -webkit-user-select: text;
+      overflow: hidden;
+      direction: rtl;
+      & > p {
+        max-width: max-content;
+      }
     }
   }
 
@@ -54,6 +65,7 @@
     & button:is(.number, .operator, .special) {
       border: 1px solid darkgray;
       font-size: 1.7rem;
+      transition: background-color 0.08s ease-out;
     }
 
     & button.number {

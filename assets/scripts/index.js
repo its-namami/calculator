@@ -1,17 +1,47 @@
 import keys from './keybindings.js';
 import Calculator from './calculator.js';
 import UiUpdater from './uiUpdater.js';
-import doc from './lazyDocument.js';
+import LazyDoc from './lazyDocument.js';
 
-const calculator = new Calculator();
-const UI = new UiUpdater(doc.node('#number-display'), doc.node('#operator-display'), keys.getKeyMap());
+const doc = new LazyDoc(document); // move near other "new" objects.
+const numberDisplay = doc.node('#number-display');
+const numberDisplayText = new LazyDoc(numberDisplay).node('p');
+const initNumberFontSize = window.getComputedStyle(numberDisplayText).fontSize.split('px')[0];
 
+const decreaseFont = () => {
+  const scale = numberDisplay.scrollWidth / numberDisplay.clientWidth;
+  const fontSize = (numberDisplayText.style?.fontSize?.split('px')[0]) || initNumberFontSize;
+  const newFontSize = Math.max(fontSize / scale, initNumberFontSize / 3);
+  numberDisplayText.style.fontSize = newFontSize + 'px';
+}
+
+const increaseFont = () => {
+  const scale = numberDisplay.clientWidth / numberDisplayText.clientWidth;
+  const fontSize = numberDisplayText.style.fontSize?.split('px')[0] || initNumberFontSize;
+  const newFontSize = Math.min(fontSize * scale, initNumberFontSize);
+  numberDisplayText.style.fontSize = newFontSize + 'px';
+}
+
+new ResizeObserver(() => {
+  const difference = numberDisplay.scrollWidth - numberDisplay.clientWidth;
+  const scale = numberDisplay.scrollWidth / numberDisplay.clientWidth;
+
+  if (difference > 0) {
+    decreaseFont();
+  } else if (difference === 0) {
+    increaseFont();
+  }
+}).observe(numberDisplayText);
+
+const operatorDisplay = doc.node('#operator-display');
 const numberElements = doc.nodes('[id^="num-"].number');
 const operatorElements = doc.nodes('[id^="oper-"].operator');
 const decimalSign = doc.node('#decimal-sign');
 const equalSign = doc.node('#equal-sign');
 const deleteDigit = doc.node('#delete-digit');
 const clearEntry = doc.node('#clear-entry');
+const calculator = new Calculator();
+const UI = new UiUpdater(numberDisplayText, operatorDisplay, keys.getKeyMap());
 
 const numberIdToDigit = {
   'num-1': '1',

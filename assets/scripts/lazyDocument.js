@@ -1,13 +1,19 @@
 export default class LazyDocument {
-  static node(selector) {
-    return document.querySelector(selector);
+  #node;
+
+  constructor(node) {
+    this.#node = node;
   }
 
-  static nodes(selector) {
-    return document.querySelectorAll(selector);
+  node(selector) {
+    return this.#node.querySelector(selector);
   }
 
-  static event(event, callable) {
-    return document.addEventListener(event, callable);
+  nodes(selector) {
+    return this.#node.querySelectorAll(selector);
+  }
+
+  event(event, callable) {
+    return this.#node.addEventListener(event, callable);
   }
 }
