@@ -60,13 +60,15 @@
       background-color: white;
 
       &:hover { background-color: #d0e8ff }
+      &:active { background-color: #b0c8ff }
     }
 
     & button.operator {
       background-color: black;
       color: white;
 
-      &:hover { background-color: slategray }
+      &:hover { background-color: #708090 }
+      &:active { background-color: #506090 }
     }
 
     & button.special {
@@ -74,6 +76,7 @@
       color: white;
 
       &:hover { background-color: #C427AA }
+      &:active { background-color: #A4078A }
     }
 
     & #positions {
