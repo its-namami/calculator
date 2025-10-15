@@ -1,10 +1,15 @@
-<!DOCTYPE html><meta charset=utf-8><title>Greatest Calculator of all time</title><link rel=stylesheet href=/dist/calculator.be879478.css><link rel=icon href=/dist/favicon.3df569c9.svg type=image/svg+xml sizes=any><body>
+<!DOCTYPE html><meta charset=utf-8><title>Greatest Calculator of all time</title><link rel=stylesheet href=/calculator.eeb36c0b.css><link rel=icon href=/favicon.3df569c9.svg type=image/svg+xml sizes=any><body>
     <div id=calculator>
       <div id=visor>
         <div id=alternate-numbers></div>
         <div id=operator-display></div>
-        <div id=number-display><p><span class=blinking-text>__</span></div>
-        <div id=clipboard class=nerd-font-container><span></span></div>
+        <div id=number-display>
+          <div id=extras>
+            <div id=copy-clipboard class=nerd-font></div>
+            <div id=hide-alternate-numbers class=nerd-font></div>
+          </div>
+          <p class=numberOutput>__</p>
+        </div>
       </div>
       <div id=buttons>
         <div id=main-pad>
@@ -31,15 +36,10 @@
         <div id=bottom-pad>
           <button id=delete-digit class=special>DEL</button>
           <button id=clear-entry class=special>C</button>
-          <div id=positions class=nerd-font-container>
-            <button id=position-left class="position special"></button>
-            <button id=position-right class="position special"></button>
-            <button id=position-home class="position special"></button>
-            <button id=position-end class="position special"></button>
-          </div>
+          <button id=all-clear-entry class=special>AC</button>
         </div>
       </div>
     </div>
-    <script src=/dist/calculator.d064c3f3.js type=module></script>
+    <script src=/calculator.fbd45256.js type=module></script>
   
 

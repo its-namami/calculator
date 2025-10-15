@@ -1,49 +1,33 @@
 import keys from './keybindings.js';
+import KeyProcessor from './keyprocessor.js';
 import Calculator from './calculator.js';
+import CalculatorProcessor from './calculatorProcessor.js';
 import UiUpdater from './uiUpdater.js';
 import LazyDoc from './lazyDocument.js';
+import NumberScale from './numberDisplayScale.js';
+import Templater from './templater.js';
 
-const doc = new LazyDoc(document); // move near other "new" objects.
-const numberDisplay = doc.node('#number-display');
+const doc = new LazyDoc(document);
+const calc = new LazyDoc(doc.node('#calculator'));
+const numberDisplay = calc.node('#number-display');
+const operatorDisplay = calc.node('#operator-display');
+const alternateNumbers = calc.node('#alternate-numbers');
 const numberDisplayText = new LazyDoc(numberDisplay).node('p');
 const initNumberFontSize = window.getComputedStyle(numberDisplayText).fontSize.split('px')[0];
-
-const decreaseFont = () => {
-  const scale = numberDisplay.scrollWidth / numberDisplay.clientWidth;
-  const fontSize = (numberDisplayText.style?.fontSize?.split('px')[0]) || initNumberFontSize;
-  const newFontSize = Math.max(fontSize / scale, initNumberFontSize / 3);
-  numberDisplayText.style.fontSize = newFontSize + 'px';
-}
-
-const increaseFont = () => {
-  const scale = numberDisplay.clientWidth / numberDisplayText.clientWidth;
-  const fontSize = numberDisplayText.style.fontSize?.split('px')[0] || initNumberFontSize;
-  const newFontSize = Math.min(fontSize * scale, initNumberFontSize);
-  numberDisplayText.style.fontSize = newFontSize + 'px';
-}
-
-new ResizeObserver(() => {
-  const difference = numberDisplay.scrollWidth - numberDisplay.clientWidth;
-  const scale = numberDisplay.scrollWidth / numberDisplay.clientWidth;
-
-  if (difference > 0) {
-    decreaseFont();
-  } else if (difference === 0) {
-    increaseFont();
-  }
-}).observe(numberDisplayText);
-
-const operatorDisplay = doc.node('#operator-display');
-const numberElements = doc.nodes('[id^="num-"].number');
-const operatorElements = doc.nodes('[id^="oper-"].operator');
-const decimalSign = doc.node('#decimal-sign');
-const equalSign = doc.node('#equal-sign');
-const deleteDigit = doc.node('#delete-digit');
-const clearEntry = doc.node('#clear-entry');
 const calculator = new Calculator();
-const UI = new UiUpdater(numberDisplayText, operatorDisplay, keys.getKeyMap());
+const UI = new UiUpdater(numberDisplayText, operatorDisplay, alternateNumbers, new Templater('div').addClass('alternate-number').node, keys.getKeyMap());
+const calculatorState = new CalculatorProcessor(UI, calculator);
+const numberElements = calc.nodes('[id^="num-"].number');
+const operatorElements = calc.nodes('[id^="oper-"].operator');
+const decimalSign = calc.node('#decimal-sign');
+const equalSign = calc.node('#equal-sign');
+const deleteDigit = calc.node('#delete-digit');
+const clearEntry = calc.node('#clear-entry');
+const allClearEntry = calc.node('#all-clear-entry');
+const copyClipboard = calc.node('#copy-clipboard');
+const hideAlternateNumbers = calc.node('#hide-alternate-numbers');
 
-const numberIdToDigit = {
+const digitMap = {
   'num-1': '1',
   'num-2': '2',
   'num-3': '3',
@@ -56,8 +40,7 @@ const numberIdToDigit = {
   'num-0': '0',
 }
 
-const operatorIdToSign = {
-  'equal-sign': '=',
+const operatorMap = {
   'oper-plus': '+',
   'oper-minus': '-',
   'oper-multiply': '*',
@@ -65,105 +48,92 @@ const operatorIdToSign = {
   'oper-sqrt': '√',
 }
 
-const digits = Object.values(numberIdToDigit);
-const operators = Object.values(operatorIdToSign);
-
-const stdUpdateUI = () => {
-    UI.updateNumber(calculator.currentNumber ?? '');
-    UI.updateOperator(calculator.currentOperator ?? '');
-}
-
-const addUpdateNumber = number => {
-    calculator.addNumber(number);
-    UI.updateNumber(calculator.currentNumber);
-}
-
-const addUpdateOperator = operator => {
-    calculator.addOperator(operator);
-    UI.updateNumber(calculator.previousNumber);
-    UI.updateOperator(calculator.currentOperator);
-}
-
-const addUpdateDecimal = () => {
-  calculator.conditionalAddDecimalSign();
-  UI.updateNumber(calculator.currentNumber);
-}
-
-const addUpdateEqual = () => {
-  calculator.calculate();
-  stdUpdateUI()
-}
-
-const addUpdateDelete = () => {
-  calculator.deleteCharacter();
-  stdUpdateUI()
-}
-
-const addUpdateClear = () => {
-  calculator.resetAll();
-  stdUpdateUI()
-}
+const keyProcessor = new KeyProcessor(Object.values(digitMap), Object.values(operatorMap), calculatorState);
 
 numberElements.forEach(number => {
-  number.addEventListener('click', () => {
-    addUpdateNumber(numberIdToDigit[number.id]);
-  });
+  new LazyDoc(number).event('click', () => calculatorState.number(digitMap[number.id]));
 });
 
 operatorElements.forEach(operator => {
-  operator.addEventListener('click', () => {
-    addUpdateOperator(operatorIdToSign[operator.id]);
-  });
+  new LazyDoc(operator).event('click', () => calculatorState.operator(operatorMap[operator.id]));
 });
 
-decimalSign.addEventListener('click', () => {
-  addUpdateDecimal();
-});
+new LazyDoc(decimalSign).event('click', () => calculatorState.decimal());
 
-equalSign.addEventListener('click', () => {
-  addUpdateEqual();
-});
+new LazyDoc(equalSign).event('click', () => calculatorState.equal());
 
-deleteDigit.addEventListener('click', () => {
-  addUpdateDelete();
-});
+new LazyDoc(deleteDigit).event('click', () => calculatorState.delete());
 
-clearEntry.addEventListener('click', () => {
-  addUpdateClear();
-});
+new LazyDoc(clearEntry).event('click', () => calculatorState.clear());
 
-const handleUniqueResponse = response => {
-  switch (response) {
-    case '=':
-      addUpdateEqual();
-      break;
-    case '.':
-      addUpdateDecimal();
-      break;
-    case 'delete':
-      addUpdateDelete();
-      break;
-    case 'clear':
-      addUpdateClear();
-      break;
-    default:
-      throw new Error(`The ${response} is not a handled case!`);
-      break;
-  }
-}
+new LazyDoc(allClearEntry).event('click', () => calculatorState.allClear());
 
-const processKey = response => {
-  if (digits.includes(response)) {
-    addUpdateNumber(response);
-  } else if (operators.includes(response)) {
-    addUpdateOperator(response);
+let copying = false;
+const showIcon = '';
+const hideIcon = '';
+
+new LazyDoc(hideAlternateNumbers).event('click', () => {
+  if (hideAlternateNumbers.textContent === showIcon) {
+    hideAlternateNumbers.textContent = hideIcon;
+    alternateNumbers.classList.add('hide-alternate-numbers');
   } else {
-    handleUniqueResponse(response);
+    hideAlternateNumbers.textContent = showIcon;
+    alternateNumbers.classList.remove('hide-alternate-numbers');
+  }
+});
+
+new LazyDoc(copyClipboard).event('click', () => {
+  const clipboardIcon = copyClipboard.textContent;
+  navigator.clipboard.writeText(numberDisplayText.textContent);
+  copyClipboard.replaceChildren('');
+
+  if (!copying) {
+    copying = true;
+
+    setTimeout(() => {
+      copying = false;
+      copyClipboard.replaceChildren(clipboardIcon);
+    }, 1500);
+  }
+});
+
+const toggleDisabledAttribute = element => {
+  if (element.getAttribute('disabled') !== null) {
+    element.removeAttribute('disabled');
+  } else {
+    element.setAttribute('disabled', '');
   }
 }
+
+new LazyDoc(alternateNumbers).event('click', e => {
+  if (event.target.class = 'alternate-number') {
+    const numberIndex = Array.prototype.indexOf.call(alternateNumbers.children, event.target);
+    UI.updateActiveAlternateNumber(numberIndex);
+    UI.updateAlternateNumbers(calculator.publicNumberStack);
+
+    if (calculator.getEditMode()
+        && numberIndex === 0) {
+      calculator.toggleEditMode();
+      toggleDisabledAttribute(equalSign);
+      toggleDisabledAttribute(allClearEntry);
+      calc.get().classList.toggle('edit-mode');
+    } else if (!calculator.getEditMode()
+        && numberIndex !== 0) {
+      calculator.toggleEditMode();
+      toggleDisabledAttribute(equalSign);
+      toggleDisabledAttribute(allClearEntry);
+      calc.get().classList.toggle('edit-mode');
+    }
+
+    calculator.setEditIndex(numberIndex);
+    calculatorState.stdUpdateUI();
+  };
+});
 
 doc.event('keydown', e => {
-  const keyResponse = keys.keyProcessor(e.key, e.shiftKey, e.ctrlKey);
+  const keyResponse = keys.processKey(e.key, e.shiftKey, e.ctrlKey);
 
-  keyResponse !== undefined && processKey(keyResponse);
+  keyResponse !== undefined && keyProcessor.process(keyResponse);
 });
+
+new NumberScale(numberDisplay, numberDisplayText, initNumberFontSize).start();

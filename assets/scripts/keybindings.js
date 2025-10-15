@@ -18,10 +18,11 @@ export default class Keybindings {
     [[['*'], ['*', 'shift'], ['t', 'shift']], '*'],
     [[['='], ['e', 'shift'], ['enter']], '='],
     [[['backspace'], ['x']], 'delete'],
-    [[['escape'], ['c', 'control']], 'clear'],
+    [[['c', 'control']], 'clear'],
+    [[['escape']], 'allClear'],
   ]);
 
-  static keyProcessor(key, shift = false, control = false) {
+  static processKey(key, shift = false, control = false) {
     for (const [keybindings, result] of Keybindings.#keys) {
       for (const keybinding of keybindings) {
 	if (keybinding.includes(key.toLowerCase())

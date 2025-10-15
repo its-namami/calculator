@@ -11,7 +11,13 @@
       <div id="visor">
         <div id="alternate-numbers"></div>
         <div id="operator-display"></div>
-        <div id="number-display"><p></p></div>
+        <div id="number-display">
+          <div id="extras">
+            <div id="copy-clipboard" class="nerd-font"></div>
+            <div id="hide-alternate-numbers" class="nerd-font"></div>
+          </div>
+          <p class='numberOutput'>__</p>
+        </div>
       </div>
       <div id="buttons">
         <div id="main-pad">
@@ -38,12 +44,7 @@
         <div id="bottom-pad">
           <button id="delete-digit" class="special">DEL</button>
           <button id="clear-entry" class="special">C</button>
-          <div id="positions" class="nerd-font-container">
-            <button id="position-left" class="special position"></button>
-            <button id="position-right" class="special position"></button>
-            <button id="position-home" class="special position"></button>
-            <button id="position-end" class="special position"></button>
-          </div>
+          <button id="all-clear-entry" class="special">AC</button>
         </div>
       </div>
     </div>

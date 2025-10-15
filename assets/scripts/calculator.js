@@ -3,9 +3,16 @@ import MathEngine from '../../node_modules/dx-calc/dxCalc.js'
 export default class Calculator {
   #numberStack = [''];
   #operatorStack = [];
-  // Possibly show in frontend as "whole calculation"
-  // numberStackClone = Calculator.#numberStack;
-  // operatorStackClone = Calculator.#operatorStack;
+  #editMode = false;
+  #editIndex;
+
+  get publicNumberStack() {
+    return [...this.#numberStack];
+  }
+
+  get publicOperatorStack() {
+    return [...this.#operatorStack];
+  }
 
   static #binaryOperations = {
     '+': (x, y) => MathEngine.number(x).add(y).value,
@@ -27,51 +34,98 @@ export default class Calculator {
     return Calculator.#binaryOperations.hasOwnProperty(operator);
   }
 
-  resetAll() {
-    this.#numberStack = [''];
-    this.#operatorStack = [];
+  toggleEditMode() {
+    this.#editMode ^= true;
+  }
+
+  getEditMode() {
+    return this.#editMode;
+  }
+
+  setEditIndex(index) {
+    this.#editIndex = this.#numberStack.length -1 -index;
+  }
+
+  clear() {
+    if (this.#editMode) {
+      this.#numberStack[this.#editIndex] = '';
+    } else {
+      this.#numberStack.pop();
+      this.#numberStack.push('');
+    }
+  }
+
+  allClear() {
+    if (!this.#editMode) {
+      this.#numberStack = [''];
+      this.#operatorStack = [];
+    }
   }
 
   deleteCharacter() {
     if (this.currentNumber !== '') {
-      this.#numberStack.push(this.#numberStack.pop().slice(0, -1));
+      if (this.#editMode) {
+        this.#numberStack[this.#editIndex] = this.#numberStack[this.#editIndex].slice(0, -1);
+      } else {
+        this.#numberStack.push(this.#numberStack.pop().slice(0, -1));
+      }
     } else if (this.currentOperator !== undefined) {
-      this.#operatorStack.pop();
+      if (!this.#editMode) {
+        this.#operatorStack.pop();
 
-      if (this.previousNumber !== undefined) {
-        this.#numberStack.pop();
+        if (this.previousNumber !== undefined) {
+          this.#numberStack.pop();
+        }
       }
     }
   }
 
-  // cannot implement get result because UI needs to display creating
-
   get currentOperator() {
+    if (this.#editMode) {
+      return this.#operatorStack[this.#editIndex];
+    }
+
     return this.#operatorStack.at(-1);
   }
 
   get currentNumber() {
+    if (this.#editMode) {
+      return this.#numberStack[this.#editIndex];
+    }
+
     return this.#numberStack.at(-1);
   }
 
   get previousNumber() {
-    return this.#numberStack.at(-2);
+    if (this.#editMode) {
+      return this.#numberStack[this.#editIndex - 1];
+    } else {
+      return this.#numberStack.at(-2);
+    }
   }
 
-  get #previousOperator() {
+  get previousOperator() {
    return this.#operatorStack.at(-2);
   }
 
   conditionalAddDecimalSign() {
     if (!this.currentNumber.includes('.')) {
-      this.#numberStack.push(this.#numberStack.pop().concat('.'));
+      if (this.#editMode) {
+        this.#numberStack[this.#editIndex] += '.';
+      } else {
+        this.#numberStack.push(this.#numberStack.pop().concat('.'));
+      }
     }
   }
 
   addNumber(stringNumber) {
-    const lastNumber = this.#numberStack.pop();
-    const newNumber = lastNumber + stringNumber;
-    this.#numberStack.push(newNumber);
+    if (this.#editMode) {
+      this.#numberStack[this.#editIndex] = this.#numberStack[this.#editIndex] + stringNumber;
+    } else {
+      const lastNumber = this.#numberStack.pop();
+      const newNumber = lastNumber + stringNumber;
+      this.#numberStack.push(newNumber);
+    }
   }
 
   addOperator(newOperator) {
@@ -96,10 +150,15 @@ export default class Calculator {
         this.#operatorStack.pop();
         this.#operatorStack.push(newOperator);
         break;
+      case 'editMode':
+        sameGroup = true;
+        this.#operatorStack[this.#editIndex] = newOperator;
+        return;
     }
 
     if (Calculator.#isUnary(this.currentOperator)
         && this.currentNumber !== '') {
+      this.#makeCalculation();
       let tempCurrentOperator = this.#operatorStack.pop();
 
       this.#operatorStack.push('*');
@@ -109,25 +168,36 @@ export default class Calculator {
       tempCurrentOperator = null;
     }
 
-    if (this.#previousOperator !== undefined) {
+    if (this.previousOperator !== undefined) {
       this.#makeCalculation();
     }
 
     if (!Calculator.#isUnary(this.currentOperator)
         && !sameGroup
-        && this.#numberStack[0] !== '-') {
+        && this.#numberStack[0] !== '-'
+        && this.currentOperator !== '=') {
       this.#breakNumber();
+    }
+
+    if (this.currentOperator === '=') {
+      this.#operatorStack.pop();
     }
   }
 
   calculate() {
-    this.#operatorStack.push('non-existant operator');
-    this.#makeCalculation();
-    this.#operatorStack.pop();
+    if (!this.#editMode) {
+      this.#operatorStack.push('non-existant operator');
+      this.#makeCalculation();
+      this.#operatorStack.pop();
+    }
   }
 
   #canAddOperator(newOperator) {
     const currentOperatorSameGroup = Calculator.#isUnary(this.currentOperator) && Calculator.#isUnary(newOperator) || Calculator.#isBinary(this.currentOperator) && Calculator.#isBinary(newOperator);
+
+    if (this.#editMode) {
+      return 'editMode';
+    }
 
     if (newOperator === '-'
         && this.#numberStack.length === 1
@@ -139,6 +209,8 @@ export default class Calculator {
     if (this.currentNumber === '') {
       if (currentOperatorSameGroup) {
         return 'sameGroup';
+      } else if (Calculator.#isUnary(newOperator)) {
+        return true;
       } else {
         return false;
       }
@@ -171,11 +243,11 @@ export default class Calculator {
   }
 
   #makeCalculation() {
-    if (Calculator.#isUnary(this.#previousOperator)) {
-        this.#unaryCalculate(this.#previousOperator);
+    if (Calculator.#isUnary(this.previousOperator)) {
+        this.#unaryCalculate(this.previousOperator);
     } else if (!Calculator.#isUnary(this.currentOperator)
-        && Calculator.#isBinary(this.#previousOperator)) {
-        this.#binaryCalculate(this.#previousOperator);
+        && Calculator.#isBinary(this.previousOperator)) {
+        this.#binaryCalculate(this.previousOperator);
     }
 
     if (this.#operatorStack.length > 1 && !Calculator.#isUnary(this.currentOperator)) {
