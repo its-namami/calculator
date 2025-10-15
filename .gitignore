@@ -1,3 +1,4 @@
 .parcel-cache/
 node_modules/
+!node_modules/dx-calc/*
 dist/
