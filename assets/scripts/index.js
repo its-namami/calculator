@@ -15,7 +15,7 @@ const alternateNumbers = calc.node('#alternate-numbers');
 const numberDisplayText = new LazyDoc(numberDisplay).node('p');
 const initNumberFontSize = window.getComputedStyle(numberDisplayText).fontSize.split('px')[0];
 const calculator = new Calculator();
-const UI = new UiUpdater(numberDisplayText, operatorDisplay, alternateNumbers, new Templater('div').addClass('alternate-number').node, keys.getKeyMap());
+const UI = new UiUpdater(numberDisplayText, operatorDisplay, alternateNumbers, new Templater('div').addClass('alternate-number').node, keys.getKeyMap(), calculator);
 const calculatorState = new CalculatorProcessor(UI, calculator);
 const numberElements = calc.nodes('[id^="num-"].number');
 const operatorElements = calc.nodes('[id^="oper-"].operator');

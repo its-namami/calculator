@@ -8,17 +8,19 @@ export default class UiUpdater {
   #alternateNumberTemplate;
   #activeAlternateNumber;
   #keymap;
+  #calculator;
   #operatorMap = {
     '/': '÷',
     '*': '×',
   };
 
-  constructor(numberElement, operatorElement, alternateNumbers, alternateNumberTemplate, keymap) {
+  constructor(numberElement, operatorElement, alternateNumbers, alternateNumberTemplate, keymap, calculator) {
     this.#numberElement = numberElement;
     this.#operatorElement = operatorElement;
     this.#alternateNumbers = alternateNumbers;
     this.#alternateNumberTemplate = alternateNumberTemplate.cloneNode(true);
     this.#keymap = keymap;
+    this.#calculator = calculator;
 
     this.#alternateNumbersSelector = new Doc(this.#alternateNumbers);
     alternateNumberTemplate.remove();

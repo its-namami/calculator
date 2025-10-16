@@ -1,4 +1,4 @@
-export default class Keybindings {
+export default class KeyBindings {
   static #keys = new Map([
     [[['0'], ['p']], '0'],
     [[['1'], ['q']], '1'],
@@ -23,7 +23,7 @@ export default class Keybindings {
   ]);
 
   static processKey(key, shift = false, control = false) {
-    for (const [keybindings, result] of Keybindings.#keys) {
+    for (const [keybindings, result] of KeyBindings.#keys) {
       for (const keybinding of keybindings) {
 	if (keybinding.includes(key.toLowerCase())
 	    && key !== 'Shift'
@@ -38,6 +38,6 @@ export default class Keybindings {
   }
 
   static getKeyMap() {
-    return Keybindings.#keys;
+    return KeyBindings.#keys;
   }
 }

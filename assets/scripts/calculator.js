@@ -44,6 +44,7 @@ export default class Calculator {
 
   setEditIndex(index) {
     this.#editIndex = this.#numberStack.length -1 -index;
+    this.publicEditIndex = index;
   }
 
   clear() {
