@@ -26,6 +26,10 @@ export default class Calculator {
     'negate': x => MathEngine.number(x).multiply('-1'),
   }
 
+  setScale(scale) {
+    MathEngine.setScale(+scale);
+  }
+
   static #isUnary(operator) {
     return Calculator.#unaryOperations.hasOwnProperty(operator);
   }

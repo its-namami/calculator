@@ -26,6 +26,7 @@ const clearEntry = calc.node('#clear-entry');
 const allClearEntry = calc.node('#all-clear-entry');
 const copyClipboard = calc.node('#copy-clipboard');
 const hideAlternateNumbers = calc.node('#hide-alternate-numbers');
+const settings = doc.node('#settings');
 
 const digitMap = {
   'num-1': '1',
@@ -129,6 +130,35 @@ new LazyDoc(alternateNumbers).event('click', e => {
     calculatorState.stdUpdateUI();
   };
 });
+
+const decimalSettingsNode = new Templater('dialog').addClass('all-settings-container').addChild(new Templater('form').setAttribute('method', 'dialog').addChild(new Templater('h1').addText('Settings').node).addChild(new Templater('dl').addChild(new Templater('dt').addClass('settings-label').addText('How many decimals do you want?').node).addChild(new Templater('dd').addClass('settings-value').addChild(new Templater('input').setAttribute('type', 'number').setAttribute('id', 'decimal-places-input').setAttribute('min', '1').setAttribute('max', '100').setAttribute('value', '9').node).node).node).addChild(new Templater('button').addClass('submit-dialog-form').setAttribute('type', 'submit').addText('Submit').node).addChild(new Templater('div').addClass('close-dialog').addText('×').node).node).node;
+
+let decimalSettingsAppended = false;
+let setUpDecimalClose = false;
+let setUpDecimalSubmit = false;
+
+new LazyDoc(settings).event('click', () => {
+  if (!decimalSettingsAppended) {
+    decimalSettingsAppended = true;
+    doc.get().body.appendChild(decimalSettingsNode);
+  }
+
+  decimalSettingsNode.showModal();
+
+  if (!setUpDecimalClose && decimalSettingsAppended) {
+    setUpDecimalClose = true;
+
+    new LazyDoc(new LazyDoc(decimalSettingsNode).node('.close-dialog')).event('click', () => decimalSettingsNode.close());
+  }
+  if (!setUpDecimalSubmit && decimalSettingsAppended) {
+    setUpDecimalSubmit = true;
+
+    const submitButton = new LazyDoc(new LazyDoc(decimalSettingsNode).node('.submit-dialog-form'));
+    submitButton.event('click', () => calculator.setScale(new LazyDoc(decimalSettingsNode).node('input#decimal-places-input').value));
+
+  }
+});
+
 
 doc.event('keydown', e => {
   const keyResponse = keys.processKey(e.key, e.shiftKey, e.ctrlKey);

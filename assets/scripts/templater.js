@@ -26,4 +26,9 @@ export default class Templater {
     this.element.appendChild(node);
     return this;
   }
+
+  setAttribute(attr, val) {
+    this.element.setAttribute(attr, val);
+    return this;
+  }
 }
