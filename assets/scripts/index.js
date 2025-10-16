@@ -1,5 +1,5 @@
-import keys from './keybindings.js';
-import KeyProcessor from './keyprocessor.js';
+import keys from './keyBindings.js';
+import KeyProcessor from './keyProcessor.js';
 import Calculator from './calculator.js';
 import CalculatorProcessor from './calculatorProcessor.js';
 import UiUpdater from './uiUpdater.js';

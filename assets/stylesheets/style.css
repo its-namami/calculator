@@ -1,3 +1,9 @@
+:root,
+html,
+body {
+  margin: 0;
+}
+
 @font-face {
   font-family: 'Speedy Font';
   src:
@@ -10,90 +16,109 @@
     url('../fonts/nerdFont.woff2');
 }
 
-#calculator {
-  position: absolute;
-  outline: 1px solid darkgray;
-  outline-offset: -1px;
-  aspect-ratio: 3 / 4; 
-  max-width: fit-content;
-  height: 80vh;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+#calculator-wrapper {
   display: flex;
-  flex-flow: column nowrap;
-  user-select: none;
-  -webkit-user-select: none;
-  background-color: darkgray;
+  overflow: hidden;
+  aspect-ratio: 9 / 16;
+  will-change: transform;
+  max-height: 100dvh;
+  justify-content: center;
 
-  &.edit-mode {
-    outline-color: red;
+  @media (min-width: 480px) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    aspect-ratio: 3 / 4; 
+    transform: translate(-50%, -50%);
+    height: 90dvh;
+    width: auto;
+    max-width: 100dvw;
   }
 
-  & *,
-  & .speedy-font {
-    font-family: 'Speedy Font', sans-serif;
-
-    &.nerd-font {
-      font-family: 'Nerd Font', sans-serif;
-    }
+  @media (min-width: 1280px) {
+    height: 75dvh;
   }
 
-  & > #visor {
+  @media (min-width: 1280px) {
+    height: 50dvh;
+  }
+
+  & > #calculator {
+    outline: 1px solid darkgray;
+    outline-offset: -1px;
+    max-width: fit-content;
+    height: 100%;
+    min-width: 100%;
     display: flex;
-    justify-content: space-between;
-    flex: 0.3;
-    align-items: center;
-    position: relative;
-    font-size: 3rem;
-    padding: 0 2rem;
-    gap: 0.5rem;
-    z-index: -1;
-    background-color: white;
+    flex-flow: column nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    background-color: darkgray;
+    will-change: transform;
 
-    & > #alternate-numbers {
-      flex: 1;
-      display: flex;
-      flex-flow: column nowrap;
-      border-right: 1px solid black;
+    & button {
+      overflow: hidden;
+    }
 
-      &.hide-alternate-numbers {
-        opacity: 0;
+    &.edit-mode {
+      outline-color: red;
+    }
+
+    & *,
+    & .speedy-font {
+      font-family: 'Speedy Font', sans-serif;
+
+      &.nerd-font {
+        font-family: 'Nerd Font', sans-serif;
       }
-      
-      & > .alternate-number {
-        white-space: nowrap;
-        overflow-x: scroll;
-        scrollbar-width: none;
-        text-overflow: ellipsis;
-        font-size: 0.3em;
-        max-width: 5ch;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        font-weight: 100;
+    }
 
-        &.active {
-          font-size: 0.45em;
-          font-weight: 900;
+    & > #visor {
+      display: flex;
+      justify-content: space-between;
+      flex: 0.3;
+      align-items: center;
+      position: relative;
+      font-size: 3rem;
+      padding: 0 2rem;
+      gap: 0.5rem;
+      z-index: -1;
+      background-color: white;
+
+      & > #alternate-numbers {
+        flex: 1;
+        display: flex;
+        flex-flow: column nowrap;
+        border-right: 1px solid black;
+
+        &.hide-alternate-numbers {
+          display: none;
+        }
+        
+        & > .alternate-number {
+          white-space: nowrap;
+          overflow-x: scroll;
+          scrollbar-width: none;
+          text-overflow: ellipsis;
+          font-size: 0.3em;
+          max-width: 5ch;
+          padding: 0.5rem 1rem;
+          cursor: pointer;
+          font-weight: 100;
+
+          &.active {
+            font-size: 0.45em;
+            font-weight: 900;
+          }
         }
       }
-    }
 
-    & > #operator-display {
-      position: absolute;
-      right: 0.5rem;
-      top: 0.5rem;
-      font-size: 0.7em;
-    }
-
-    & > #number-display {
-      flex: 5;
-      position: relative;
-      overflow-x: scroll;
-      scrollbar-width: none;
-      display: flex;
-      flex-direction: row-reverse;
-      justify-content: flex-start;
+      & > #operator-display {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+        font-size: 0.7em;
+      }
 
       & > #extras {
         position: fixed;
@@ -141,83 +166,93 @@
         }
       }
 
-      & > p.numberOutput {
-        user-select: text;
-        width: max-content;
-        margin: 0;
+      & > #number-display {
+        flex: 5;
+        position: relative;
+        overflow-x: scroll;
+        scrollbar-width: none;
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+
+        & > p.numberOutput {
+          user-select: text;
+          width: max-content;
+          margin: 0;
+        }
+
       }
 
     }
 
-  }
-
-  & > #buttons {
-    flex: 1;
-    display: grid;
-    grid-template: repeat(5, 1fr) / repeat(4, 1fr);
-    margin-top: .5rem;
-
-    & button:is(.number, .operator, .special) {
-      border: 1px solid darkgray;
-      font-size: 1.7rem;
-      transition: background-color 0.08s ease-out;
-    }
-
-    & button.number {
-      background-color: white;
-
-      &:hover { background-color: #d0e8ff }
-      &:active { background-color: #b0c8ff }
-    }
-
-    & button.operator {
-      background-color: black;
-      color: white;
-
-      &:hover { background-color: #708090 }
-      &:active { background-color: #506090 }
-    }
-
-    & button.special {
-      background-color: #D43775;
-      color: white;
-
-      &:hover:not([disabled]) { background-color: #C427AA }
-      &:active:not([disabled]) { background-color: #A4078A }
-    }
-
-    & #positions {
+    & > #buttons {
+      flex: 1;
       display: grid;
-      grid-template: repeat(2, 1fr) / repeat(2, 1fr);
-    }
+      grid-template: repeat(5, 1fr) / repeat(4, 1fr);
+      margin-top: .5rem;
 
-    & > #main-pad {
-      display: grid;
-      grid-area: 1 /  1 /span 4 / span 3;
-      grid-template: repeat(4, 1fr) / repeat(3, 1fr);
-
-      & > button.special {
-        order: 1;
+      & button:is(.number, .operator, .special) {
+        border: 1px solid darkgray;
+        font-size: 1.7rem;
+        transition: background-color 0.08s ease-out;
       }
-    }
 
-    & > #side-pad {
-      display: flex;
-      grid-area: 1 /  -2 /-1 / -1;
-      flex-flow: column nowrap;
+      & button.number {
+        background-color: white;
 
-      & > * {
-        flex: 1;
+        &:hover { background-color: #d0e8ff }
+        &:active { background-color: #b0c8ff }
       }
-    }
 
-    & > #bottom-pad {
-      display: grid;
-      grid-area: -2 /  1 /-1 / span 3;
-      grid-template-columns: repeat(3, 1fr);
+      & button.operator {
+        background-color: black;
+        color: white;
 
-      & > * {
-        flex: 1;
+        &:hover { background-color: #708090 }
+        &:active { background-color: #506090 }
+      }
+
+      & button.special {
+        background-color: #D43775;
+        color: white;
+
+        &:hover:not([disabled]) { background-color: #C427AA }
+        &:active:not([disabled]) { background-color: #A4078A }
+      }
+
+      & #positions {
+        display: grid;
+        grid-template: repeat(2, 1fr) / repeat(2, 1fr);
+      }
+
+      & > #main-pad {
+        display: grid;
+        grid-area: 1 /  1 /span 4 / span 3;
+        grid-template: repeat(4, 1fr) / repeat(3, 1fr);
+
+        & > button.special {
+          order: 1;
+        }
+      }
+
+      & > #side-pad {
+        display: flex;
+        grid-area: 1 /  -2 /-1 / -1;
+        flex-flow: column nowrap;
+
+        & > * {
+          flex: 1;
+        }
+      }
+
+      & > #bottom-pad {
+        display: grid;
+        grid-area: -2 /  1 /-1 / span 3;
+        grid-template-columns: repeat(3, 1fr);
+
+        & > * {
+          flex: 1;
+        }
       }
     }
   }

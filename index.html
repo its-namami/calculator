@@ -7,44 +7,46 @@
     <link rel="icon" href="assets/media/favicon/favicon.svg" type="image/svg+xml" sizes="any">
   </head>
   <body>
-    <div id="calculator">
-      <div id="visor">
-        <div id="alternate-numbers"></div>
-        <div id="operator-display"></div>
-        <div id="number-display">
+    <div id="calculator-wrapper">
+      <div id="calculator">
+        <div id="visor">
+          <div id="alternate-numbers"></div>
+          <div id="operator-display"></div>
           <div id="extras">
             <div id="copy-clipboard" class="nerd-font"></div>
             <div id="hide-alternate-numbers" class="nerd-font"></div>
           </div>
-          <p class='numberOutput'>__</p>
+          <div id="number-display">
+            <p class='numberOutput'>__</p>
+          </div>
         </div>
-      </div>
-      <div id="buttons">
-        <div id="main-pad">
-          <button id="num-1" class="number">1</button>
-          <button id="num-2" class="number">2</button>
-          <button id="num-3" class="number">3</button>
-          <button id="num-4" class="number">4</button>
-          <button id="num-5" class="number">5</button>
-          <button id="num-6" class="number">6</button>
-          <button id="num-7" class="number">7</button>
-          <button id="num-8" class="number">8</button>
-          <button id="num-9" class="number">9</button>
-          <button id="decimal-sign" class="number">·</button>
-          <button id="num-0" class="number">0</button>
-          <button id="equal-sign" class="special">=</button>
-        </div>
-        <div id="side-pad">
-          <button id="oper-plus" class="operator">+</button>
-          <button id="oper-minus" class="operator">-</button>
-          <button id="oper-multiply" class="operator">×</button>
-          <button id="oper-divide" class="operator">÷</button>
-          <button id="oper-sqrt" class="operator">√</button>
-        </div>
-        <div id="bottom-pad">
-          <button id="delete-digit" class="special">DEL</button>
-          <button id="clear-entry" class="special">C</button>
-          <button id="all-clear-entry" class="special">AC</button>
+        <div id="buttons">
+          <div id="main-pad">
+            <button id="num-1" class="number">1</button>
+            <button id="num-2" class="number">2</button>
+            <button id="num-3" class="number">3</button>
+            <button id="num-4" class="number">4</button>
+            <button id="num-5" class="number">5</button>
+            <button id="num-6" class="number">6</button>
+            <button id="num-7" class="number">7</button>
+            <button id="num-8" class="number">8</button>
+            <button id="num-9" class="number">9</button>
+            <button id="decimal-sign" class="number">·</button>
+            <button id="num-0" class="number">0</button>
+            <button id="equal-sign" class="special">=</button>
+          </div>
+          <div id="side-pad">
+            <button id="oper-plus" class="operator">+</button>
+            <button id="oper-minus" class="operator">-</button>
+            <button id="oper-multiply" class="operator">×</button>
+            <button id="oper-divide" class="operator">÷</button>
+            <button id="oper-sqrt" class="operator">√</button>
+          </div>
+          <div id="bottom-pad">
+            <button id="delete-digit" class="special">DEL</button>
+            <button id="clear-entry" class="special">C</button>
+            <button id="all-clear-entry" class="special">AC</button>
+          </div>
         </div>
       </div>
     </div>
