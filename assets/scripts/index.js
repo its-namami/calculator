@@ -107,28 +107,24 @@ const toggleDisabledAttribute = element => {
 }
 
 new LazyDoc(alternateNumbers).event('click', e => {
-  if (event.target.class = 'alternate-number') {
-    const numberIndex = Array.prototype.indexOf.call(alternateNumbers.children, event.target);
-    UI.updateActiveAlternateNumber(numberIndex);
-    UI.updateAlternateNumbers(calculator.publicNumberStack);
+  const target = e.target.closest('.alternate-number');
+  if (!target) return;
 
-    if (calculator.getEditMode()
-        && numberIndex === 0) {
-      calculator.toggleEditMode();
-      toggleDisabledAttribute(equalSign);
-      toggleDisabledAttribute(allClearEntry);
-      calc.get().classList.toggle('edit-mode');
-    } else if (!calculator.getEditMode()
-        && numberIndex !== 0) {
-      calculator.toggleEditMode();
-      toggleDisabledAttribute(equalSign);
-      toggleDisabledAttribute(allClearEntry);
-      calc.get().classList.toggle('edit-mode');
-    }
+  const numberIndex = Array.prototype.indexOf.call(alternateNumbers.children, target);
+  UI.updateActiveAlternateNumber(numberIndex);
+  UI.updateAlternateNumbers(calculator.publicNumberStack);
 
-    calculator.setEditIndex(numberIndex);
-    calculatorState.stdUpdateUI();
-  };
+  const editing = calculator.getEditMode();
+  const shouldBeEditing = numberIndex !== 0;
+  if (editing !== shouldBeEditing) {
+    calculator.toggleEditMode();
+    toggleDisabledAttribute(equalSign);
+    toggleDisabledAttribute(allClearEntry);
+    calc.get().classList.toggle('edit-mode');
+  }
+
+  calculator.setEditIndex(numberIndex);
+  calculatorState.stdUpdateUI();
 });
 
 const decimalSettingsNode = new Templater('dialog').addClass('all-settings-container').addChild(new Templater('form').setAttribute('method', 'dialog').addChild(new Templater('h1').addText('Settings').node).addChild(new Templater('dl').addChild(new Templater('dt').addClass('settings-label').addText('How many decimals do you want?').node).addChild(new Templater('dd').addClass('settings-value').addChild(new Templater('input').setAttribute('type', 'number').setAttribute('id', 'decimal-places-input').setAttribute('min', '1').setAttribute('max', '100').setAttribute('value', '9').node).node).node).addChild(new Templater('button').addClass('submit-dialog-form').setAttribute('type', 'submit').addText('Submit').node).addChild(new Templater('div').addClass('close-dialog').addText('×').node).node).node;

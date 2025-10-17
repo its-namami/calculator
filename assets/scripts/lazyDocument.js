@@ -13,7 +13,7 @@ export default class LazyDocument {
     return this.#node.querySelectorAll(selector);
   }
 
-  nodesArray() {
+  nodesArray(selector) {
     return Array.from(this.#node.querySelectorAll(selector));
   }
 

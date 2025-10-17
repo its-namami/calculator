@@ -1,4 +1,4 @@
-import MathEngine from '../../node_modules/dx-calc/dxCalc.js'
+import MathEngine from 'https://cdn.jsdelivr.net/npm/dx-calc@0.2.3/dxCalc.js';
 
 export default class Calculator {
   #numberStack = [''];
@@ -23,7 +23,7 @@ export default class Calculator {
 
   static #unaryOperations = {
     '√': x => MathEngine.number(x).sqrt().value,
-    'negate': x => MathEngine.number(x).multiply('-1'),
+    'negate': x => MathEngine.number(x).multiply('-1').value,
   }
 
   setScale(scale) {
