@@ -215,15 +215,14 @@ const updateActiveThemeConfig = update => {
   saveThemeConfigs(themeConfigs);
 };
 
-const handleAnkiThemeMode = mode => setThemeMode(mode);
-window.calculatorThemeModeHook = handleAnkiThemeMode;
+window.calculatorThemeModeHook = setThemeMode;
 
 doc.event('anki-light-dark-mode-change', event => {
-  handleAnkiThemeMode(event.detail?.mode ?? event.detail);
+  setThemeMode(event.detail?.mode ?? event.detail);
 });
 
 doc.event('anki-theme-change', event => {
-  handleAnkiThemeMode(event.detail?.mode ?? event.detail);
+  setThemeMode(event.detail?.mode ?? event.detail);
 });
 
 const themeObserver = new MutationObserver(() => {
@@ -231,14 +230,13 @@ const themeObserver = new MutationObserver(() => {
 });
 
 themeObserver.observe(doc.get().documentElement, { attributes: true, attributeFilter: ['class'] });
-themeObserver.observe(doc.get().body, { attributes: true, attributeFilter: ['class'] });
 
 window.addEventListener('beforeunload', () => {
   themeObserver.disconnect();
 });
 
 const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
-if (darkSchemeMediaQuery !== undefined) {
+if (darkSchemeMediaQuery) {
   darkSchemeMediaQuery.addEventListener('change', event => {
     setThemeMode(event.matches ? 'dark' : 'light');
   });
