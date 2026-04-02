@@ -75,9 +75,9 @@ const detectThemeMode = () => {
   const htmlNode = doc.get().documentElement;
   const bodyNode = doc.get().body;
   const darkModeClassnames = ['nightMode', 'night-mode', 'dark-mode', 'dark'];
-  const hasDarkModeClass = darkModeClassnames.some(className =>
-    htmlNode.classList.contains(className) || bodyNode.classList.contains(className)
-  );
+  const hasDarkModeClass =
+    darkModeClassnames.some(className => htmlNode.classList.contains(className))
+    || darkModeClassnames.some(className => bodyNode.classList.contains(className));
 
   if (hasDarkModeClass) return 'dark';
   if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
@@ -233,10 +233,16 @@ const themeObserver = new MutationObserver(() => {
 themeObserver.observe(doc.get().documentElement, { attributes: true, attributeFilter: ['class'] });
 themeObserver.observe(doc.get().body, { attributes: true, attributeFilter: ['class'] });
 
-const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
-darkSchemeMediaQuery?.addEventListener('change', event => {
-  setThemeMode(event.matches ? 'dark' : 'light');
+window.addEventListener('beforeunload', () => {
+  themeObserver.disconnect();
 });
+
+const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+if (darkSchemeMediaQuery !== undefined) {
+  darkSchemeMediaQuery.addEventListener('change', event => {
+    setThemeMode(event.matches ? 'dark' : 'light');
+  });
+}
 
 applyThemeConfig(activeThemeMode);
 
