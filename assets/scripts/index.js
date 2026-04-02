@@ -199,6 +199,7 @@ const applyThemeConfig = mode => {
 
 const setThemeMode = mode => {
   if (mode !== 'light' && mode !== 'dark') return;
+  if (activeThemeMode === mode) return;
   activeThemeMode = mode;
   applyThemeConfig(activeThemeMode);
 };
@@ -214,15 +215,15 @@ const updateActiveThemeConfig = update => {
   saveThemeConfigs(themeConfigs);
 };
 
-const ankiThemeModeHook = mode => setThemeMode(mode);
-window.calculatorThemeModeHook = ankiThemeModeHook;
+const handleAnkiThemeMode = mode => setThemeMode(mode);
+window.calculatorThemeModeHook = handleAnkiThemeMode;
 
 doc.event('anki-light-dark-mode-change', event => {
-  ankiThemeModeHook(event.detail?.mode ?? event.detail);
+  handleAnkiThemeMode(event.detail?.mode ?? event.detail);
 });
 
 doc.event('anki-theme-change', event => {
-  ankiThemeModeHook(event.detail?.mode ?? event.detail);
+  handleAnkiThemeMode(event.detail?.mode ?? event.detail);
 });
 
 const themeObserver = new MutationObserver(() => {
@@ -232,7 +233,8 @@ const themeObserver = new MutationObserver(() => {
 themeObserver.observe(doc.get().documentElement, { attributes: true, attributeFilter: ['class'] });
 themeObserver.observe(doc.get().body, { attributes: true, attributeFilter: ['class'] });
 
-window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', event => {
+const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+darkSchemeMediaQuery?.addEventListener('change', event => {
   setThemeMode(event.matches ? 'dark' : 'light');
 });
 
