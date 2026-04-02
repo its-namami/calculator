@@ -225,21 +225,37 @@ doc.event('anki-theme-change', event => {
   setThemeMode(event.detail?.mode ?? event.detail);
 });
 
-const themeObserver = new MutationObserver(() => {
-  setThemeMode(detectThemeMode());
-});
+let pendingThemeSync = null;
+const syncThemeMode = () => {
+  if (pendingThemeSync !== null) return;
+
+  pendingThemeSync = requestAnimationFrame(() => {
+    pendingThemeSync = null;
+    setThemeMode(detectThemeMode());
+  });
+};
+
+const themeObserver = new MutationObserver(syncThemeMode);
 
 themeObserver.observe(doc.get().documentElement, { attributes: true, attributeFilter: ['class'] });
 
 window.addEventListener('beforeunload', () => {
+  if (pendingThemeSync !== null) {
+    cancelAnimationFrame(pendingThemeSync);
+  }
   themeObserver.disconnect();
+  if (darkSchemeMediaQuery) {
+    darkSchemeMediaQuery.removeEventListener('change', onDarkSchemeChange);
+  }
 });
 
 const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+const onDarkSchemeChange = event => {
+  setThemeMode(event.matches ? 'dark' : 'light');
+};
+
 if (darkSchemeMediaQuery) {
-  darkSchemeMediaQuery.addEventListener('change', event => {
-    setThemeMode(event.matches ? 'dark' : 'light');
-  });
+  darkSchemeMediaQuery.addEventListener('change', onDarkSchemeChange);
 }
 
 applyThemeConfig(activeThemeMode);
