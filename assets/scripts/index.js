@@ -225,14 +225,19 @@ doc.event('anki-theme-change', event => {
   setThemeMode(event.detail?.mode ?? event.detail);
 });
 
+const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+const onDarkSchemeChange = event => {
+  setThemeMode(event.matches ? 'dark' : 'light');
+};
+
 let pendingThemeSync = null;
 const syncThemeMode = () => {
   if (pendingThemeSync !== null) return;
 
-  pendingThemeSync = requestAnimationFrame(() => {
+  pendingThemeSync = setTimeout(() => {
     pendingThemeSync = null;
     setThemeMode(detectThemeMode());
-  });
+  }, 50);
 };
 
 const themeObserver = new MutationObserver(syncThemeMode);
@@ -241,18 +246,14 @@ themeObserver.observe(doc.get().documentElement, { attributes: true, attributeFi
 
 window.addEventListener('beforeunload', () => {
   if (pendingThemeSync !== null) {
-    cancelAnimationFrame(pendingThemeSync);
+    clearTimeout(pendingThemeSync);
+    pendingThemeSync = null;
   }
   themeObserver.disconnect();
   if (darkSchemeMediaQuery) {
     darkSchemeMediaQuery.removeEventListener('change', onDarkSchemeChange);
   }
 });
-
-const darkSchemeMediaQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
-const onDarkSchemeChange = event => {
-  setThemeMode(event.matches ? 'dark' : 'light');
-};
 
 if (darkSchemeMediaQuery) {
   darkSchemeMediaQuery.addEventListener('change', onDarkSchemeChange);
