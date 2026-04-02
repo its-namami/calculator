@@ -27,6 +27,63 @@ const allClearEntry = calc.node('#all-clear-entry');
 const copyClipboard = calc.node('#copy-clipboard');
 const hideAlternateNumbers = calc.node('#hide-alternate-numbers');
 const settings = doc.node('#settings');
+const CONFIG_STORAGE_KEY = 'calculator-theme-config-v1';
+const DEFAULT_THEME_CONFIG = Object.freeze({
+  decimalPlaces: '9',
+});
+
+const normalizeDecimalPlaces = value => {
+  const parsedValue = Number.parseInt(value, 10);
+  if (Number.isNaN(parsedValue)) return DEFAULT_THEME_CONFIG.decimalPlaces;
+
+  return String(Math.max(1, Math.min(100, parsedValue)));
+};
+
+const normalizeThemeConfig = config => ({
+  decimalPlaces: normalizeDecimalPlaces(config?.decimalPlaces ?? DEFAULT_THEME_CONFIG.decimalPlaces),
+});
+
+const createDefaultThemeConfigs = () => ({
+  light: normalizeThemeConfig(),
+  dark: normalizeThemeConfig(),
+});
+
+const readThemeConfigs = () => {
+  try {
+    const savedConfigs = localStorage.getItem(CONFIG_STORAGE_KEY);
+    if (!savedConfigs) return createDefaultThemeConfigs();
+    const parsedConfigs = JSON.parse(savedConfigs);
+
+    return {
+      light: normalizeThemeConfig(parsedConfigs.light),
+      dark: normalizeThemeConfig(parsedConfigs.dark),
+    };
+  } catch {
+    return createDefaultThemeConfigs();
+  }
+};
+
+const saveThemeConfigs = configs => {
+  try {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(configs));
+  } catch {
+    // ignore persistence errors
+  }
+};
+
+const detectThemeMode = () => {
+  const htmlNode = doc.get().documentElement;
+  const bodyNode = doc.get().body;
+  const darkModeClassnames = ['nightMode', 'night-mode', 'dark-mode', 'dark'];
+  const hasDarkModeClass = darkModeClassnames.some(className =>
+    htmlNode.classList.contains(className) || bodyNode.classList.contains(className)
+  );
+
+  if (hasDarkModeClass) return 'dark';
+  if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
+
+  return 'light';
+};
 
 const digitMap = {
   'num-1': '1',
@@ -128,6 +185,58 @@ new LazyDoc(alternateNumbers).event('click', e => {
 });
 
 const decimalSettingsNode = new Templater('dialog').addClass('all-settings-container').addChild(new Templater('form').setAttribute('method', 'dialog').addChild(new Templater('h1').addText('Settings').node).addChild(new Templater('dl').addChild(new Templater('dt').addClass('settings-label').addText('How many decimals do you want?').node).addChild(new Templater('dd').addClass('settings-value').addChild(new Templater('input').setAttribute('type', 'number').setAttribute('id', 'decimal-places-input').setAttribute('min', '1').setAttribute('max', '100').setAttribute('value', '9').node).node).node).addChild(new Templater('button').addClass('submit-dialog-form').setAttribute('type', 'submit').addText('Submit').node).addChild(new Templater('div').addClass('close-dialog').addText('×').node).node).node;
+const decimalPlacesInput = new LazyDoc(decimalSettingsNode).node('input#decimal-places-input');
+let activeThemeMode = detectThemeMode();
+let themeConfigs = readThemeConfigs();
+
+const applyThemeConfig = mode => {
+  const selectedThemeConfig = themeConfigs[mode] ?? themeConfigs.light;
+  const decimalPlaces = normalizeDecimalPlaces(selectedThemeConfig.decimalPlaces);
+
+  calculator.setScale(decimalPlaces);
+  decimalPlacesInput.value = decimalPlaces;
+};
+
+const setThemeMode = mode => {
+  if (mode !== 'light' && mode !== 'dark') return;
+  activeThemeMode = mode;
+  applyThemeConfig(activeThemeMode);
+};
+
+const updateActiveThemeConfig = update => {
+  themeConfigs = {
+    ...themeConfigs,
+    [activeThemeMode]: normalizeThemeConfig({
+      ...themeConfigs[activeThemeMode],
+      ...update,
+    }),
+  };
+  saveThemeConfigs(themeConfigs);
+};
+
+const ankiThemeModeHook = mode => setThemeMode(mode);
+window.calculatorThemeModeHook = ankiThemeModeHook;
+
+doc.event('anki-light-dark-mode-change', event => {
+  ankiThemeModeHook(event.detail?.mode ?? event.detail);
+});
+
+doc.event('anki-theme-change', event => {
+  ankiThemeModeHook(event.detail?.mode ?? event.detail);
+});
+
+const themeObserver = new MutationObserver(() => {
+  setThemeMode(detectThemeMode());
+});
+
+themeObserver.observe(doc.get().documentElement, { attributes: true, attributeFilter: ['class'] });
+themeObserver.observe(doc.get().body, { attributes: true, attributeFilter: ['class'] });
+
+window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', event => {
+  setThemeMode(event.matches ? 'dark' : 'light');
+});
+
+applyThemeConfig(activeThemeMode);
 
 let decimalSettingsAppended = false;
 let setUpDecimalClose = false;
@@ -139,6 +248,7 @@ new LazyDoc(settings).event('click', () => {
     doc.get().body.appendChild(decimalSettingsNode);
   }
 
+  decimalPlacesInput.value = themeConfigs[activeThemeMode].decimalPlaces;
   decimalSettingsNode.showModal();
 
   if (!setUpDecimalClose && decimalSettingsAppended) {
@@ -150,7 +260,11 @@ new LazyDoc(settings).event('click', () => {
     setUpDecimalSubmit = true;
 
     const submitButton = new LazyDoc(new LazyDoc(decimalSettingsNode).node('.submit-dialog-form'));
-    submitButton.event('click', () => calculator.setScale(new LazyDoc(decimalSettingsNode).node('input#decimal-places-input').value));
+    submitButton.event('click', () => {
+      const decimalPlaces = normalizeDecimalPlaces(decimalPlacesInput.value);
+      updateActiveThemeConfig({ decimalPlaces });
+      applyThemeConfig(activeThemeMode);
+    });
 
   }
 });
